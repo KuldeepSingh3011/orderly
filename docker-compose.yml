@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Zookeeper - Required for Kafka coordination
   zookeeper:
@@ -12,11 +10,6 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - orderly-network
-    healthcheck:
-      test: echo ruok | nc localhost 2181 | grep imok
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Kafka - Event streaming platform
   kafka:
@@ -35,15 +28,9 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     depends_on:
-      zookeeper:
-        condition: service_healthy
+      - zookeeper
     networks:
       - orderly-network
-    healthcheck:
-      test: kafka-broker-api-versions --bootstrap-server localhost:9092
-      interval: 10s
-      timeout: 10s
-      retries: 5
 
   # MongoDB - Primary database
   mongodb:
@@ -57,11 +44,6 @@ services:
       - mongodb_data:/data/db
     networks:
       - orderly-network
-    healthcheck:
-      test: mongosh --eval "db.adminCommand('ping')"
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Redis - Caching and session storage
   redis:
@@ -74,11 +56,6 @@ services:
       - redis_data:/data
     networks:
       - orderly-network
-    healthcheck:
-      test: redis-cli ping
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 networks:
   orderly-network:
