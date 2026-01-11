@@ -1,0 +1,36 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: notification-service
+
+  # MongoDB for notification history
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/orderly
+      database: orderly
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.orderly.common.events
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Logging
+logging:
+  level:
+    com.orderly: DEBUG
+    org.springframework.kafka: INFO
