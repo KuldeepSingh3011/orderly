@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Package, Sparkles } from 'lucide-react';
+import { ShoppingCart, Package, Sparkles, Plus, Minus } from 'lucide-react';
 import { productApi, recommendationApi } from '../api';
 import { useCart } from '../App';
 
@@ -17,11 +17,20 @@ const getProductEmoji = (category) => {
 };
 
 function ProductCard({ product, onAddToCart }) {
+  const [quantity, setQuantity] = useState(1);
+  
   const stockClass = product.availableQuantity <= 0 
     ? 'stock-out' 
     : product.availableQuantity <= 5 
       ? 'stock-low' 
       : '';
+
+  const maxQty = Math.min(product.availableQuantity || 10, 10);
+
+  const handleAdd = () => {
+    onAddToCart(product, quantity);
+    setQuantity(1); // Reset after adding
+  };
 
   return (
     <div className="card product-card">
@@ -36,9 +45,30 @@ function ProductCard({ product, onAddToCart }) {
           ? 'Out of Stock' 
           : `${product.availableQuantity} in stock`}
       </div>
+      
+      {product.availableQuantity > 0 && (
+        <div className="quantity-selector">
+          <button 
+            className="qty-btn" 
+            onClick={() => setQuantity(q => Math.max(1, q - 1))}
+            disabled={quantity <= 1}
+          >
+            <Minus size={14} />
+          </button>
+          <span className="qty-value">{quantity}</span>
+          <button 
+            className="qty-btn" 
+            onClick={() => setQuantity(q => Math.min(maxQty, q + 1))}
+            disabled={quantity >= maxQty}
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+      )}
+      
       <button 
         className="btn btn-primary" 
-        onClick={() => onAddToCart(product)}
+        onClick={handleAdd}
         disabled={product.availableQuantity <= 0}
       >
         <ShoppingCart size={16} />

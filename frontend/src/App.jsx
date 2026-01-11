@@ -1,16 +1,37 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Package, Box, Sparkles, Home } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { ShoppingCart, Package, Box, Home, LogOut } from 'lucide-react';
 import { cartApi } from './api';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import OrdersPage from './pages/OrdersPage';
+import LoginPage from './pages/LoginPage';
 import './index.css';
 
 // Context for cart state
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
+
+// Protected Route component
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="loading">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+}
 
 // Toast notification component
 function Toast({ message, type, onClose }) {
@@ -29,6 +50,13 @@ function Toast({ message, type, onClose }) {
 // Header component
 function Header({ cartCount }) {
   const location = useLocation();
+  const { user, logout, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) return null;
+  
+  const getInitials = (name) => {
+    return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+  };
   
   return (
     <header className="header">
@@ -61,20 +89,35 @@ function Header({ cartCount }) {
             Orders
           </Link>
         </nav>
+        <div className="user-menu">
+          <div className="user-info">
+            <div className="user-avatar">{getInitials(user?.name)}</div>
+            <span>{user?.name}</span>
+          </div>
+          <button className="btn btn-secondary logout-btn" onClick={logout}>
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
       </div>
     </header>
   );
 }
 
-function App() {
+function AppContent() {
   const [cart, setCart] = useState([]);
   const [toast, setToast] = useState(null);
-  const userId = 'demo-user'; // In production, this would come from auth
+  const { user, isAuthenticated } = useAuth();
+  const userId = user?.id || 'guest';
 
-  // Fetch cart on load
+  // Fetch cart on load and when user changes
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (isAuthenticated) {
+      fetchCart();
+    } else {
+      setCart([]);
+    }
+  }, [isAuthenticated, userId]);
 
   const fetchCart = async () => {
     try {
@@ -85,16 +128,16 @@ function App() {
     }
   };
 
-  const addToCart = async (product) => {
+  const addToCart = async (product, quantity = 1) => {
     try {
       await cartApi.addToCart(userId, {
         productId: product.id,
         productName: product.name,
-        quantity: 1,
+        quantity: quantity,
         price: product.price,
       });
       await fetchCart();
-      showToast('Added to cart!', 'success');
+      showToast(`Added ${quantity} item${quantity > 1 ? 's' : ''} to cart!`, 'success');
     } catch (error) {
       showToast('Failed to add to cart', 'error');
     }
@@ -124,26 +167,41 @@ function App() {
 
   return (
     <CartContext.Provider value={cartContextValue}>
-      <BrowserRouter>
-        <div className="app">
-          <Header cartCount={cart.length} />
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<ProductsPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-            </Routes>
-          </main>
-          {toast && (
-            <Toast 
-              message={toast.message} 
-              type={toast.type} 
-              onClose={() => setToast(null)} 
-            />
-          )}
-        </div>
-      </BrowserRouter>
+      <div className="app">
+        <Header cartCount={cart.length} />
+        <main className="main-content">
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={
+              <ProtectedRoute><ProductsPage /></ProtectedRoute>
+            } />
+            <Route path="/cart" element={
+              <ProtectedRoute><CartPage /></ProtectedRoute>
+            } />
+            <Route path="/orders" element={
+              <ProtectedRoute><OrdersPage /></ProtectedRoute>
+            } />
+          </Routes>
+        </main>
+        {toast && (
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={() => setToast(null)} 
+          />
+        )}
+      </div>
     </CartContext.Provider>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
