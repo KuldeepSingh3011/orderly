@@ -84,7 +84,39 @@ function ProductCard({ product, onAddToCart }) {
   );
 }
 
-function Recommendations({ userId }) {
+function RecommendationCard({ product, onAddToCart }) {
+  const handleAdd = () => {
+    onAddToCart(product, 1);
+  };
+
+  const available = product.availableQuantity ?? product.stockQuantity ?? 0;
+
+  return (
+    <div className="recommendation-card clickable" onClick={handleAdd}>
+      <div className="rec-product-image">
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} />
+        ) : (
+          getProductEmoji(product.category)
+        )}
+      </div>
+      <div className="rec-product-info">
+        <div className="rec-product-category">{product.category}</div>
+        <div className="rec-product-name">{product.name}</div>
+        <div className="rec-product-price">${product.price?.toFixed(2)}</div>
+      </div>
+      <button 
+        className="rec-add-btn"
+        disabled={available <= 0}
+        title="Add to Cart"
+      >
+        <Plus size={16} />
+      </button>
+    </div>
+  );
+}
+
+function Recommendations({ userId, onAddToCart }) {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -95,7 +127,9 @@ function Recommendations({ userId }) {
   const fetchRecommendations = async () => {
     try {
       const response = await recommendationApi.getRecommendations(userId);
-      setRecommendations(response.data.data?.recommendations || []);
+      // Now recommendations are product objects, not strings
+      const recs = response.data.data?.recommendations || [];
+      setRecommendations(recs);
     } catch (error) {
       console.error('Failed to fetch recommendations:', error);
     } finally {
@@ -109,14 +143,16 @@ function Recommendations({ userId }) {
     <div className="recommendations">
       <h3 className="recommendations-title">
         <Sparkles size={20} />
-        AI Recommendations for You
+        Recommended for You
       </h3>
-      <div className="recommendations-list">
-        {recommendations.map((rec, index) => (
-          <div key={index} className="recommendation-card">
-            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✨</div>
-            <div>{rec}</div>
-          </div>
+      <p className="recommendations-subtitle">Click on a product to add it to your cart</p>
+      <div className="recommendations-grid">
+        {recommendations.map((product) => (
+          <RecommendationCard 
+            key={product.id} 
+            product={product} 
+            onAddToCart={onAddToCart}
+          />
         ))}
       </div>
     </div>
@@ -246,7 +282,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {!isSearching && <Recommendations userId={userId} />}
+      {!isSearching && <Recommendations userId={userId} onAddToCart={addToCart} />}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 package com.orderly.recommendation.controller;
 
 import com.orderly.common.dto.ApiResponse;
+import com.orderly.recommendation.dto.ProductDTO;
 import com.orderly.recommendation.service.RecommendationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,14 @@ public class RecommendationController {
     }
 
     /**
-     * Get personalized recommendations for a user.
+     * Get personalized product recommendations for a user.
+     * Returns actual products from inventory that the user might be interested in.
      */
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getRecommendations(
             @PathVariable String userId) {
 
-        List<String> recommendations = recommendationService.getRecommendations(userId);
+        List<ProductDTO> recommendations = recommendationService.getRecommendations(userId);
 
         Map<String, Object> data = Map.of(
                 "userId", userId,
