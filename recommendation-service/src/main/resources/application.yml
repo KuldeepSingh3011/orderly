@@ -1,0 +1,37 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: recommendation-service
+
+  # MongoDB for order history
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/orderly
+      database: orderly
+
+  # Redis for caching recommendations
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# AI Configuration (Ollama)
+ai:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama2
+    timeout: 30000
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Logging
+logging:
+  level:
+    com.orderly: DEBUG
