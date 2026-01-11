@@ -72,10 +72,17 @@ function Toast({ message, type, onClose }) {
 }
 
 // Search component
-function SearchBar({ onSearch }) {
+function SearchBar({ onSearch, searchQuery }) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Sync local query with global searchQuery (for when it's cleared externally)
+  useEffect(() => {
+    if (searchQuery === '') {
+      setQuery('');
+    }
+  }, [searchQuery]);
 
   const handleInputChange = async (e) => {
     const value = e.target.value;
@@ -139,7 +146,7 @@ function SearchBar({ onSearch }) {
 }
 
 // Header component
-function Header({ cartCount, onSearch }) {
+function Header({ cartCount, onSearch, searchQuery, onClearSearch }) {
   const location = useLocation();
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
   
@@ -148,21 +155,26 @@ function Header({ cartCount, onSearch }) {
   const getInitials = (name) => {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
   };
+
+  const handleProductsClick = () => {
+    onClearSearch();
+  };
   
   return (
     <header className="header">
       <div className="header-content">
-        <Link to="/" className="logo">
+        <Link to="/" className="logo" onClick={handleProductsClick}>
           <Box size={28} />
           Orderly
         </Link>
         
-        <SearchBar onSearch={onSearch} />
+        <SearchBar onSearch={onSearch} searchQuery={searchQuery} />
         
         <nav className="nav">
           <Link 
             to="/" 
             className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
+            onClick={handleProductsClick}
           >
             <Home size={18} />
             Products
@@ -267,6 +279,10 @@ function AppContent() {
     setSearchQuery(query);
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
   const cartContextValue = {
     cart,
     userId,
@@ -281,7 +297,12 @@ function AppContent() {
   return (
     <CartContext.Provider value={cartContextValue}>
       <div className="app">
-        <Header cartCount={cart.length} onSearch={handleSearch} />
+        <Header 
+          cartCount={cart.length} 
+          onSearch={handleSearch} 
+          searchQuery={searchQuery}
+          onClearSearch={handleClearSearch}
+        />
         <main className="main-content">
           <Routes>
             <Route path="/login" element={<LoginPage />} />
