@@ -1,0 +1,55 @@
+services:
+  # Frontend
+  - type: web
+    name: orderly-frontend
+    env: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    envVars:
+      - key: VITE_API_URL
+        value: https://orderly-api.onrender.com
+
+  # Auth Service
+  - type: web
+    name: orderly-auth
+    env: docker
+    dockerfilePath: ./Dockerfile.services
+    dockerContext: .
+    dockerCommand: java -jar /app/auth-service/target/*.jar
+    envVars:
+      - key: SPRING_DATA_MONGODB_URI
+        fromDatabase:
+          name: orderly-mongodb
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+
+  # Order Service  
+  - type: web
+    name: orderly-orders
+    env: docker
+    dockerfilePath: ./Dockerfile.services
+    dockerContext: .
+    dockerCommand: java -jar /app/order-service/target/*.jar
+    envVars:
+      - key: SPRING_DATA_MONGODB_URI
+        fromDatabase:
+          name: orderly-mongodb
+          property: connectionString
+
+  # Inventory Service
+  - type: web
+    name: orderly-inventory
+    env: docker
+    dockerfilePath: ./Dockerfile.services
+    dockerContext: .
+    dockerCommand: java -jar /app/inventory-service/target/*.jar
+    envVars:
+      - key: SPRING_DATA_MONGODB_URI
+        fromDatabase:
+          name: orderly-mongodb
+          property: connectionString
+
+databases:
+  - name: orderly-mongodb
+    plan: starter
