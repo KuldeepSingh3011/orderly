@@ -1,0 +1,62 @@
+# Multi-stage build for all Java services
+# Build from project root: docker build -f Dockerfile.services .
+
+FROM maven:3.9-eclipse-temurin-17 AS builder
+WORKDIR /app
+
+# Copy the entire project for multi-module build
+COPY pom.xml .
+COPY common-lib ./common-lib
+COPY auth-service ./auth-service
+COPY order-service ./order-service
+COPY inventory-service ./inventory-service
+COPY notification-service ./notification-service
+COPY recommendation-service ./recommendation-service
+
+# Build all modules
+RUN mvn clean package -DskipTests
+
+# ============ Auth Service ============
+FROM eclipse-temurin:17-jre AS auth-service
+WORKDIR /app
+COPY --from=builder /app/auth-service/target/*.jar app.jar
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8085/actuator/health || exit 1
+EXPOSE 8085
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# ============ Order Service ============
+FROM eclipse-temurin:17-jre AS order-service
+WORKDIR /app
+COPY --from=builder /app/order-service/target/*.jar app.jar
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8081/actuator/health || exit 1
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# ============ Inventory Service ============
+FROM eclipse-temurin:17-jre AS inventory-service
+WORKDIR /app
+COPY --from=builder /app/inventory-service/target/*.jar app.jar
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8082/actuator/health || exit 1
+EXPOSE 8082
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# ============ Notification Service ============
+FROM eclipse-temurin:17-jre AS notification-service
+WORKDIR /app
+COPY --from=builder /app/notification-service/target/*.jar app.jar
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8083/actuator/health || exit 1
+EXPOSE 8083
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# ============ Recommendation Service ============
+FROM eclipse-temurin:17-jre AS recommendation-service
+WORKDIR /app
+COPY --from=builder /app/recommendation-service/target/*.jar app.jar
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8084/actuator/health || exit 1
+EXPOSE 8084
+ENTRYPOINT ["java", "-jar", "app.jar"]

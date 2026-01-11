@@ -59,30 +59,15 @@ services:
       timeout: 5s
       retries: 5
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: orderly-elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      - orderly-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
   # ============== Backend Services ==============
+  # NOTE: Build JARs locally first with: mvn clean package -DskipTests
+  # Then run: docker-compose -f docker-compose.prod.yml up -d
 
   auth-service:
     build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.services
+      target: auth-service
     container_name: orderly-auth-service
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
@@ -101,8 +86,9 @@ services:
 
   order-service:
     build:
-      context: ./order-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.services
+      target: order-service
     container_name: orderly-order-service
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
@@ -121,29 +107,28 @@ services:
 
   inventory-service:
     build:
-      context: ./inventory-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.services
+      target: inventory-service
     container_name: orderly-inventory-service
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
-      ELASTICSEARCH_ENABLED: "true"
+      SPRING_ELASTICSEARCH_ENABLED: "false"
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_started
-      elasticsearch:
-        condition: service_healthy
     networks:
       - orderly-network
     restart: unless-stopped
 
   notification-service:
     build:
-      context: ./notification-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.services
+      target: notification-service
     container_name: orderly-notification-service
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
@@ -159,8 +144,9 @@ services:
 
   recommendation-service:
     build:
-      context: ./recommendation-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.services
+      target: recommendation-service
     container_name: orderly-recommendation-service
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
@@ -199,4 +185,3 @@ networks:
 volumes:
   mongodb_data:
   redis_data:
-  elasticsearch_data:
