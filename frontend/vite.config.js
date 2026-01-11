@@ -7,7 +7,22 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Proxy API requests to avoid CORS issues
+      // Auth Service (port 8085)
+      '/api/auth': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+      },
+      // Admin User APIs (auth-service)
+      '/api/admin/users': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+      },
+      // Admin Product APIs (inventory-service)
+      '/api/admin/products': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+      },
+      // Order Service (port 8081)
       '/api/cart': {
         target: 'http://localhost:8081',
         changeOrigin: true,
@@ -20,10 +35,16 @@ export default defineConfig({
         target: 'http://localhost:8081',
         changeOrigin: true,
       },
+      // Inventory Service (port 8082)
       '/api/products': {
         target: 'http://localhost:8082',
         changeOrigin: true,
       },
+      '/api/search': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+      },
+      // Recommendation Service (port 8084)
       '/api/recommendations': {
         target: 'http://localhost:8084',
         changeOrigin: true,

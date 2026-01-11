@@ -2,6 +2,7 @@ package com.orderly.inventory.service;
 
 import com.orderly.inventory.entity.Product;
 import com.orderly.inventory.repository.ProductRepository;
+import com.orderly.inventory.search.ProductSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -17,9 +18,19 @@ public class InventoryService {
     private static final int MAX_RETRY_ATTEMPTS = 3;
 
     private final ProductRepository productRepository;
+    private final ProductSearchService searchService;
 
-    public InventoryService(ProductRepository productRepository) {
+    public InventoryService(ProductRepository productRepository, ProductSearchService searchService) {
         this.productRepository = productRepository;
+        this.searchService = searchService;
+    }
+
+    private void indexProduct(Product product) {
+        try {
+            searchService.indexProduct(product);
+        } catch (Exception e) {
+            log.warn("Failed to index product in Elasticsearch: {}", e.getMessage());
+        }
     }
 
     /**
@@ -102,13 +113,87 @@ public class InventoryService {
     }
 
     public Product createProduct(Product product) {
-        return productRepository.save(product);
+        Product saved = productRepository.save(product);
+        indexProduct(saved);
+        return saved;
     }
 
     public Product updateStock(String productId, int newQuantity) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
         product.setStockQuantity(newQuantity);
+        return productRepository.save(product);
+    }
+
+    public List<Product> getAllProductsIncludingInactive() {
+        return productRepository.findAll();
+    }
+
+    public Product updateProduct(String productId, Product productUpdate) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+
+        if (productUpdate.getName() != null) {
+            product.setName(productUpdate.getName());
+        }
+        if (productUpdate.getDescription() != null) {
+            product.setDescription(productUpdate.getDescription());
+        }
+        if (productUpdate.getCategory() != null) {
+            product.setCategory(productUpdate.getCategory());
+        }
+        if (productUpdate.getPrice() != null) {
+            product.setPrice(productUpdate.getPrice());
+        }
+        if (productUpdate.getImageUrl() != null) {
+            product.setImageUrl(productUpdate.getImageUrl());
+        }
+        if (productUpdate.getSku() != null) {
+            product.setSku(productUpdate.getSku());
+        }
+
+        log.info("Updated product: {}", productId);
+        Product saved = productRepository.save(product);
+        indexProduct(saved);
+        return saved;
+    }
+
+    public Product updatePrice(String productId, java.math.BigDecimal newPrice) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+        product.setPrice(newPrice);
+        log.info("Updated price for product {}: {}", productId, newPrice);
+        Product saved = productRepository.save(product);
+        indexProduct(saved);
+        return saved;
+    }
+
+    public Product adjustStock(String productId, int adjustment) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+        int newStock = product.getStockQuantity() + adjustment;
+        if (newStock < 0) {
+            throw new IllegalArgumentException("Stock cannot be negative");
+        }
+        product.setStockQuantity(newStock);
+        log.info("Adjusted stock for product {} by {}: new stock = {}", productId, adjustment, newStock);
+        return productRepository.save(product);
+    }
+
+    public void deleteProduct(String productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+        // Soft delete - just deactivate
+        product.setActive(false);
+        productRepository.save(product);
+        log.info("Deleted (deactivated) product: {}", productId);
+    }
+
+    public Product setProductActive(String productId, boolean active) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+        product.setActive(active);
+        log.info("Set product {} active status to: {}", productId, active);
         return productRepository.save(product);
     }
 }

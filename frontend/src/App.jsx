@@ -1,12 +1,13 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { ShoppingCart, Package, Box, Home, LogOut } from 'lucide-react';
-import { cartApi } from './api';
+import { ShoppingCart, Package, Box, Home, LogOut, Settings, Search } from 'lucide-react';
+import { cartApi, productApi } from './api';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
 import OrdersPage from './pages/OrdersPage';
 import LoginPage from './pages/LoginPage';
+import AdminPage from './pages/AdminPage';
 import './index.css';
 
 // Context for cart state
@@ -33,6 +34,29 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+// Admin Route component
+function AdminRoute({ children }) {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="loading">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+}
+
 // Toast notification component
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -47,10 +71,77 @@ function Toast({ message, type, onClose }) {
   );
 }
 
+// Search component
+function SearchBar({ onSearch }) {
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const handleInputChange = async (e) => {
+    const value = e.target.value;
+    setQuery(value);
+
+    if (value.length >= 2) {
+      try {
+        const response = await productApi.getSuggestions(value);
+        setSuggestions(response.data.data || []);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Failed to get suggestions:', error);
+      }
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSearch = (searchQuery) => {
+    setQuery(searchQuery);
+    setShowSuggestions(false);
+    onSearch(searchQuery);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      handleSearch(query);
+    }
+  };
+
+  return (
+    <form className="search-form" onSubmit={handleSubmit}>
+      <div className="search-input-wrapper">
+        <Search size={18} className="search-icon" />
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Search products..."
+          value={query}
+          onChange={handleInputChange}
+          onFocus={() => query.length >= 2 && setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+        />
+        {showSuggestions && suggestions.length > 0 && (
+          <ul className="suggestions-list">
+            {suggestions.map((suggestion, index) => (
+              <li 
+                key={index}
+                onClick={() => handleSearch(suggestion)}
+              >
+                {suggestion}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </form>
+  );
+}
+
 // Header component
-function Header({ cartCount }) {
+function Header({ cartCount, onSearch }) {
   const location = useLocation();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
   
   if (!isAuthenticated) return null;
   
@@ -65,6 +156,9 @@ function Header({ cartCount }) {
           <Box size={28} />
           Orderly
         </Link>
+        
+        <SearchBar onSearch={onSearch} />
+        
         <nav className="nav">
           <Link 
             to="/" 
@@ -88,11 +182,23 @@ function Header({ cartCount }) {
             <Package size={18} />
             Orders
           </Link>
+          {isAdmin && (
+            <Link 
+              to="/admin" 
+              className={`nav-link admin-link ${location.pathname === '/admin' ? 'active' : ''}`}
+            >
+              <Settings size={18} />
+              Admin
+            </Link>
+          )}
         </nav>
         <div className="user-menu">
           <div className="user-info">
             <div className="user-avatar">{getInitials(user?.name)}</div>
-            <span>{user?.name}</span>
+            <div className="user-details">
+              <span className="user-name">{user?.name}</span>
+              {isAdmin && <span className="admin-badge">Admin</span>}
+            </div>
           </div>
           <button className="btn btn-secondary logout-btn" onClick={logout}>
             <LogOut size={16} />
@@ -107,6 +213,7 @@ function Header({ cartCount }) {
 function AppContent() {
   const [cart, setCart] = useState([]);
   const [toast, setToast] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, isAuthenticated } = useAuth();
   const userId = user?.id || 'guest';
 
@@ -156,6 +263,10 @@ function AppContent() {
     setToast({ message, type });
   };
 
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
   const cartContextValue = {
     cart,
     userId,
@@ -163,12 +274,14 @@ function AppContent() {
     clearCart,
     fetchCart,
     showToast,
+    searchQuery,
+    setSearchQuery,
   };
 
   return (
     <CartContext.Provider value={cartContextValue}>
       <div className="app">
-        <Header cartCount={cart.length} />
+        <Header cartCount={cart.length} onSearch={handleSearch} />
         <main className="main-content">
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -180,6 +293,9 @@ function AppContent() {
             } />
             <Route path="/orders" element={
               <ProtectedRoute><OrdersPage /></ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <AdminRoute><AdminPage /></AdminRoute>
             } />
           </Routes>
         </main>

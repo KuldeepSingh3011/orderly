@@ -34,6 +34,7 @@
 
     <modules>
         <module>common-lib</module>
+        <module>auth-service</module>
         <module>order-service</module>
         <module>inventory-service</module>
         <module>notification-service</module>

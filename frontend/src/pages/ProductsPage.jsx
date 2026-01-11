@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Package, Sparkles, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Package, Sparkles, Plus, Minus, X } from 'lucide-react';
 import { productApi, recommendationApi } from '../api';
 import { useCart } from '../App';
 
@@ -25,28 +25,34 @@ function ProductCard({ product, onAddToCart }) {
       ? 'stock-low' 
       : '';
 
-  const maxQty = Math.min(product.availableQuantity || 10, 10);
+  const maxQty = Math.min(product.availableQuantity || product.stockQuantity || 10, 10);
 
   const handleAdd = () => {
     onAddToCart(product, quantity);
     setQuantity(1); // Reset after adding
   };
 
+  const available = product.availableQuantity ?? product.stockQuantity ?? 0;
+
   return (
     <div className="card product-card">
       <div className="product-image">
-        {getProductEmoji(product.category)}
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} />
+        ) : (
+          getProductEmoji(product.category)
+        )}
       </div>
       <div className="product-category">{product.category}</div>
       <div className="product-name">{product.name}</div>
       <div className="product-price">${product.price?.toFixed(2)}</div>
       <div className={`product-stock ${stockClass}`}>
-        {product.availableQuantity <= 0 
+        {available <= 0 
           ? 'Out of Stock' 
-          : `${product.availableQuantity} in stock`}
+          : `${available} in stock`}
       </div>
       
-      {product.availableQuantity > 0 && (
+      {available > 0 && (
         <div className="quantity-selector">
           <button 
             className="qty-btn" 
@@ -69,7 +75,7 @@ function ProductCard({ product, onAddToCart }) {
       <button 
         className="btn btn-primary" 
         onClick={handleAdd}
-        disabled={product.availableQuantity <= 0}
+        disabled={available <= 0}
       >
         <ShoppingCart size={16} />
         Add to Cart
@@ -119,12 +125,22 @@ function Recommendations({ userId }) {
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
+  const [searchResults, setSearchResults] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { addToCart, userId } = useCart();
+  const [searching, setSearching] = useState(false);
+  const { addToCart, userId, searchQuery, setSearchQuery } = useCart();
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery && searchQuery.trim()) {
+      performSearch(searchQuery);
+    } else {
+      setSearchResults(null);
+    }
+  }, [searchQuery]);
 
   const fetchProducts = async () => {
     try {
@@ -137,6 +153,29 @@ export default function ProductsPage() {
     }
   };
 
+  const performSearch = async (query) => {
+    setSearching(true);
+    try {
+      const response = await productApi.search(query);
+      setSearchResults(response.data.data || []);
+    } catch (error) {
+      console.error('Search failed:', error);
+      // Fall back to client-side filtering
+      const filtered = products.filter(p => 
+        p.name?.toLowerCase().includes(query.toLowerCase()) ||
+        p.description?.toLowerCase().includes(query.toLowerCase())
+      );
+      setSearchResults(filtered);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -145,24 +184,59 @@ export default function ProductsPage() {
     );
   }
 
+  const displayProducts = searchResults !== null ? searchResults : products;
+  const isSearching = searchResults !== null;
+
   return (
     <div>
-      <h1 className="page-title">Products</h1>
-      <p className="page-subtitle">Browse our catalog and add items to your cart</p>
+      <h1 className="page-title">
+        {isSearching ? `Search Results for "${searchQuery}"` : 'Products'}
+      </h1>
+      <p className="page-subtitle">
+        {isSearching ? (
+          <span className="search-info">
+            Found {displayProducts.length} product{displayProducts.length !== 1 ? 's' : ''}
+            <button className="clear-search-btn" onClick={clearSearch}>
+              <X size={14} />
+              Clear Search
+            </button>
+          </span>
+        ) : (
+          'Browse our catalog and add items to your cart'
+        )}
+      </p>
 
-      {products.length === 0 ? (
+      {searching && (
+        <div className="searching-overlay">
+          <div className="spinner"></div>
+          <p>Searching...</p>
+        </div>
+      )}
+
+      {displayProducts.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📦</div>
-          <h2 className="empty-title">No Products Yet</h2>
+          <div className="empty-icon">{isSearching ? '🔍' : '📦'}</div>
+          <h2 className="empty-title">
+            {isSearching ? 'No Results Found' : 'No Products Yet'}
+          </h2>
           <p className="empty-text">
-            Create some products using the API:
-            <br />
-            <code>POST http://localhost:8082/api/products</code>
+            {isSearching ? (
+              <>
+                No products match your search.
+                <button className="link-button" onClick={clearSearch}>View all products</button>
+              </>
+            ) : (
+              <>
+                Create some products using the API:
+                <br />
+                <code>POST http://localhost:8082/api/products</code>
+              </>
+            )}
           </p>
         </div>
       ) : (
         <div className="product-grid">
-          {products.map(product => (
+          {displayProducts.map(product => (
             <ProductCard 
               key={product.id} 
               product={product} 
@@ -172,7 +246,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      <Recommendations userId={userId} />
+      {!isSearching && <Recommendations userId={userId} />}
     </div>
   );
 }
