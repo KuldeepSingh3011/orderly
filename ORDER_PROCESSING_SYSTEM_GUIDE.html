@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event-Driven Order Processing System - Complete Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a24;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+            --border-color: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        nav {
+            background: var(--bg-secondary);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        nav ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            list-style: none;
+            justify-content: center;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        nav a:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent-blue);
+        }
+
+        section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-blue);
+            display: inline-block;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--accent-cyan);
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+            color: var(--accent-purple);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .highlight {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--accent-blue);
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight.warning {
+            border-left-color: var(--accent-orange);
+        }
+
+        .highlight.success {
+            border-left-color: var(--accent-green);
+        }
+
+        .highlight.danger {
+            border-left-color: var(--accent-red);
+        }
+
+        .interview-question {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid var(--accent-purple);
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+
+        .interview-question::before {
+            content: "🎯 Interview Question: ";
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        tr:hover td {
+            background: var(--bg-tertiary);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+        }
+
+        pre {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
+        }
+
+        .card h4 {
+            margin-top: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-blue { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .badge-purple { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+        .badge-green { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .badge-orange { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .badge-cyan { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .comparison-grid > div {
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .good {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--accent-green);
+        }
+
+        .bad {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-red);
+        }
+
+        .flow-diagram {
+            background: var(--bg-tertiary);
+            padding: 2rem;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            h1 { font-size: 1.8rem; }
+            section { padding: 1.5rem; }
+            .comparison-grid { grid-template-columns: 1fr; }
+            nav ul { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🚀 Event-Driven Order Processing System</h1>
+        <p>A comprehensive guide to understanding microservices architecture, technology choices, and interview-ready concepts for SDE-2 Backend roles</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#why-microservices">Why Microservices</a></li>
+            <li><a href="#why-mongodb">Why MongoDB</a></li>
+            <li><a href="#why-redis">Why Redis</a></li>
+            <li><a href="#why-kafka">Why Kafka</a></li>
+            <li><a href="#why-springboot">Why Spring Boot</a></li>
+            <li><a href="#authentication">Authentication</a></li>
+            <li><a href="#admin-panel">Admin Panel</a></li>
+            <li><a href="#search">Search</a></li>
+            <li><a href="#failure-handling">Failure Handling</a></li>
+            <li><a href="#interview-concepts">Interview Concepts</a></li>
+            <li><a href="#docker-compose">Docker Compose</a></li>
+            <li><a href="#implementation">Implementation</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        
+        <!-- SECTION: Overview -->
+        <section id="overview">
+            <h2>📋 System Overview</h2>
+            
+            <p>This system processes e-commerce orders using an event-driven architecture with multiple microservices. Each service is independently deployable, scalable, and maintainable.</p>
+
+            <h3>The Services</h3>
+            <div class="tech-card">
+                <div class="card">
+                    <h4>🔐 Auth Service</h4>
+                    <p>Handles user authentication, registration, and authorization. JWT-based security with role management.</p>
+                    <span class="badge badge-red">Security</span>
+                    <span class="badge badge-green">REST API</span>
+                </div>
+                <div class="card">
+                    <h4>🛒 Order Service</h4>
+                    <p>Handles order creation, cart management, and order status tracking. The entry point for customer interactions.</p>
+                    <span class="badge badge-blue">Producer</span>
+                    <span class="badge badge-green">REST API</span>
+                </div>
+                <div class="card">
+                    <h4>📦 Inventory Service</h4>
+                    <p>Manages product catalog, stock levels, admin operations, and search. Reserves and releases inventory based on order events.</p>
+                    <span class="badge badge-purple">Consumer</span>
+                    <span class="badge badge-blue">Producer</span>
+                    <span class="badge badge-cyan">Search</span>
+                </div>
+                <div class="card">
+                    <h4>🔔 Notification Service</h4>
+                    <p>Sends email/SMS notifications for order updates. Listens to all order-related events.</p>
+                    <span class="badge badge-purple">Consumer</span>
+                </div>
+                <div class="card">
+                    <h4>🤖 Recommendation Service</h4>
+                    <p>Uses AI to generate personalized product recommendations based on order history.</p>
+                    <span class="badge badge-orange">AI</span>
+                    <span class="badge badge-green">REST API</span>
+                </div>
+            </div>
+
+            <h3>Technology Stack</h3>
+            <table>
+                <tr>
+                    <th>Technology</th>
+                    <th>Role</th>
+                    <th>Why This Choice</th>
+                </tr>
+                <tr>
+                    <td><code>Spring Boot</code></td>
+                    <td>Application Framework</td>
+                    <td>Industry standard for Java microservices, excellent ecosystem</td>
+                </tr>
+                <tr>
+                    <td><code>Spring Security + JWT</code></td>
+                    <td>Authentication & Authorization</td>
+                    <td>Stateless auth with tokens, role-based access control, industry standard</td>
+                </tr>
+                <tr>
+                    <td><code>Apache Kafka</code></td>
+                    <td>Event Streaming</td>
+                    <td>Reliable async communication, event sourcing, decoupling</td>
+                </tr>
+                <tr>
+                    <td><code>MongoDB</code></td>
+                    <td>Primary Database</td>
+                    <td>Flexible schema, document model fits e-commerce, horizontal scaling</td>
+                </tr>
+                <tr>
+                    <td><code>Redis</code></td>
+                    <td>Caching & Session</td>
+                    <td>Sub-millisecond latency, versatile data structures, TTL support</td>
+                </tr>
+                <tr>
+                    <td><code>Elasticsearch</code></td>
+                    <td>Search Engine</td>
+                    <td>Full-text search, autocomplete, fuzzy matching, fast queries</td>
+                </tr>
+                <tr>
+                    <td><code>Ollama/OpenAI</code></td>
+                    <td>AI Recommendations</td>
+                    <td>Personalized recommendations, natural language understanding</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- SECTION: Why Microservices -->
+        <section id="why-microservices">
+            <h2>🏗️ Why Microservices Architecture?</h2>
+
+            <div class="interview-question">
+                "Why did you choose microservices over a monolithic architecture for this project?"
+            </div>
+
+            <h3>The Problems with Monolithic Architecture</h3>
+            <ul>
+                <li><strong>Single Point of Failure:</strong> If the payment module crashes, the entire application goes down</li>
+                <li><strong>Scaling Limitations:</strong> You must scale the entire application even if only the order module needs more resources</li>
+                <li><strong>Technology Lock-in:</strong> Entire application must use the same language/framework</li>
+                <li><strong>Deployment Risk:</strong> Small change requires redeploying the entire application</li>
+                <li><strong>Team Bottlenecks:</strong> Large teams stepping on each other's code</li>
+            </ul>
+
+            <h3>How Microservices Solve These Problems</h3>
+            <table>
+                <tr>
+                    <th>Problem</th>
+                    <th>Microservices Solution</th>
+                </tr>
+                <tr>
+                    <td>Single Point of Failure</td>
+                    <td>If Notification Service fails, Order Service continues working. Orders are still placed, notifications are queued in Kafka.</td>
+                </tr>
+                <tr>
+                    <td>Scaling Limitations</td>
+                    <td>Scale only what needs scaling. High order volume? Scale Order Service. Heavy inventory checks? Scale Inventory Service.</td>
+                </tr>
+                <tr>
+                    <td>Technology Lock-in</td>
+                    <td>Each service can use the best tool for its job. Recommendation Service could use Python for ML if needed.</td>
+                </tr>
+                <tr>
+                    <td>Deployment Risk</td>
+                    <td>Deploy services independently. Update Notification Service without touching Order Service.</td>
+                </tr>
+                <tr>
+                    <td>Team Organization</td>
+                    <td>Team A owns Order Service, Team B owns Inventory Service. Clear boundaries and ownership.</td>
+                </tr>
+            </table>
+
+            <div class="highlight success">
+                <strong>Key Insight:</strong> Microservices trade development simplicity for operational flexibility. They're not always the right choice—use them when you need independent scaling, deployment, or team autonomy.
+            </div>
+
+            <h3>Why 4 Services in This Project?</h3>
+            <p>Each service has a <strong>single responsibility</strong> and can evolve independently:</p>
+            
+            <div class="tech-card">
+                <div class="card">
+                    <h4>Order Service</h4>
+                    <p><strong>Bounded Context:</strong> Order lifecycle management</p>
+                    <p><strong>Why separate?</strong> Orders are the core domain. This service handles the most critical business logic and needs to be highly available.</p>
+                </div>
+                <div class="card">
+                    <h4>Inventory Service</h4>
+                    <p><strong>Bounded Context:</strong> Product and stock management</p>
+                    <p><strong>Why separate?</strong> Inventory logic (reservations, stock levels) is complex. Separating it allows specialized optimization for concurrent stock updates.</p>
+                </div>
+                <div class="card">
+                    <h4>Notification Service</h4>
+                    <p><strong>Bounded Context:</strong> Customer communication</p>
+                    <p><strong>Why separate?</strong> Notifications are non-critical for order placement. If email is slow, orders shouldn't wait. Also, easy to add new notification channels (SMS, push) without touching other services.</p>
+                </div>
+                <div class="card">
+                    <h4>Recommendation Service</h4>
+                    <p><strong>Bounded Context:</strong> Personalization and AI</p>
+                    <p><strong>Why separate?</strong> AI/ML workloads have different resource needs (GPU, memory). Keeping it separate allows independent scaling and experimentation with models.</p>
+                </div>
+            </div>
+
+            <div class="interview-question">
+                "What are the challenges of microservices?"
+            </div>
+
+            <ul>
+                <li><strong>Distributed System Complexity:</strong> Network failures, latency, partial failures</li>
+                <li><strong>Data Consistency:</strong> No ACID transactions across services</li>
+                <li><strong>Operational Overhead:</strong> More services to deploy, monitor, debug</li>
+                <li><strong>Testing Complexity:</strong> Integration testing across services is harder</li>
+                <li><strong>Service Discovery:</strong> Services need to find each other dynamically</li>
+            </ul>
+        </section>
+
+        <!-- SECTION: Why MongoDB -->
+        <section id="why-mongodb">
+            <h2>🍃 Why MongoDB? (And Not SQL)</h2>
+
+            <div class="interview-question">
+                "Why did you choose MongoDB over a relational database like PostgreSQL or MySQL?"
+            </div>
+
+            <h3>Understanding the Data Model</h3>
+            <p>Let's look at how an Order would be stored in SQL vs MongoDB:</p>
+
+            <div class="comparison-grid">
+                <div class="bad">
+                    <h4>❌ SQL (Relational) Approach</h4>
+                    <pre><code>-- Need multiple tables
+orders (id, user_id, status, total, created_at)
+order_items (id, order_id, product_id, quantity, price)
+products (id, name, description, price, category_id)
+categories (id, name)
+shipping_address (id, order_id, street, city, zip)
+
+-- To get one order: 4-5 JOINs required!</code></pre>
+                </div>
+                <div class="good">
+                    <h4>✅ MongoDB (Document) Approach</h4>
+                    <pre><code>// Single document, single read!
+{
+  "_id": "order_123",
+  "userId": "user_456",
+  "status": "CONFIRMED",
+  "items": [
+    {"productId": "prod_1", "name": "Laptop", "qty": 1, "price": 999},
+    {"productId": "prod_2", "name": "Mouse", "qty": 2, "price": 29}
+  ],
+  "shippingAddress": {
+    "street": "123 Main St",
+    "city": "NYC",
+    "zip": "10001"
+  },
+  "total": 1057,
+  "createdAt": "2024-01-15T10:30:00Z"
+}</code></pre>
+                </div>
+            </div>
+
+            <h3>Why MongoDB is Better for This Project</h3>
+            <table>
+                <tr>
+                    <th>Reason</th>
+                    <th>Explanation</th>
+                    <th>SQL Limitation</th>
+                </tr>
+                <tr>
+                    <td><strong>Flexible Schema</strong></td>
+                    <td>Orders can have varying number of items, different product attributes (electronics vs clothing have different fields)</td>
+                    <td>SQL requires predefined rigid schema. Adding new fields means ALTER TABLE migrations.</td>
+                </tr>
+                <tr>
+                    <td><strong>Embedded Documents</strong></td>
+                    <td>Store order items, shipping address, payment info all in one document. One read = complete order.</td>
+                    <td>SQL needs JOINs across multiple tables. More complex queries, more latency.</td>
+                </tr>
+                <tr>
+                    <td><strong>Horizontal Scaling</strong></td>
+                    <td>MongoDB shards data across servers natively. Built for distributed systems.</td>
+                    <td>SQL vertical scaling is limited. Horizontal scaling (sharding) is complex and not native.</td>
+                </tr>
+                <tr>
+                    <td><strong>High Write Throughput</strong></td>
+                    <td>E-commerce has write-heavy workloads (orders, cart updates, views). MongoDB handles this well.</td>
+                    <td>SQL ACID transactions can become bottlenecks under heavy write load.</td>
+                </tr>
+                <tr>
+                    <td><strong>Developer Productivity</strong></td>
+                    <td>JSON-like documents map directly to Java/JavaScript objects. No ORM complexity.</td>
+                    <td>SQL requires ORM layers, mapping entities, managing relationships.</td>
+                </tr>
+            </table>
+
+            <div class="interview-question">
+                "When would you use SQL instead of MongoDB?"
+            </div>
+
+            <h3>When SQL is Better</h3>
+            <ul>
+                <li><strong>Complex Transactions:</strong> Banking, financial systems needing ACID across multiple tables</li>
+                <li><strong>Complex Relationships:</strong> Social networks with many-to-many relationships</li>
+                <li><strong>Reporting/Analytics:</strong> Complex JOINs and aggregations across normalized data</li>
+                <li><strong>Data Integrity:</strong> When foreign key constraints and referential integrity are critical</li>
+                <li><strong>Existing Expertise:</strong> Team knows SQL well, data is naturally relational</li>
+            </ul>
+
+            <div class="highlight warning">
+                <strong>Interview Tip:</strong> Never say "MongoDB is always better than SQL" or vice versa. Show you understand trade-offs: "MongoDB fits this use case because of flexible schema and document model, but for a banking system with complex transactions, I'd choose PostgreSQL."
+            </div>
+
+            <h3>MongoDB Data Model for This Project</h3>
+            <pre><code>// Order Document
+{
+  "_id": ObjectId("..."),
+  "orderId": "ORD-2024-001",
+  "userId": "user_123",
+  "status": "CONFIRMED",  // PENDING → CONFIRMED → SHIPPED → DELIVERED
+  "items": [
+    {
+      "productId": "prod_456",
+      "name": "Mechanical Keyboard",
+      "quantity": 1,
+      "price": 149.99,
+      "imageUrl": "https://..."
+    }
+  ],
+  "shippingAddress": {
+    "name": "John Doe",
+    "street": "123 Tech Lane",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94102",
+    "country": "USA"
+  },
+  "payment": {
+    "method": "CARD",
+    "last4": "4242",
+    "transactionId": "txn_abc123"
+  },
+  "subtotal": 149.99,
+  "tax": 12.37,
+  "shipping": 0,
+  "total": 162.36,
+  "createdAt": ISODate("2024-01-15T10:30:00Z"),
+  "updatedAt": ISODate("2024-01-15T10:35:00Z")
+}
+
+// Product Document
+{
+  "_id": ObjectId("..."),
+  "productId": "prod_456",
+  "name": "Mechanical Keyboard",
+  "description": "RGB backlit...",
+  "category": "Electronics",
+  "price": 149.99,
+  "stock": 250,
+  "attributes": {
+    "brand": "KeyMaster",
+    "switchType": "Cherry MX Blue",
+    "layout": "TKL"
+  },
+  "images": ["url1", "url2"],
+  "ratings": {
+    "average": 4.5,
+    "count": 1234
+  }
+}</code></pre>
+
+            <h3>Key MongoDB Concepts to Know</h3>
+            <table>
+                <tr>
+                    <th>Concept</th>
+                    <th>What It Is</th>
+                    <th>Interview Relevance</th>
+                </tr>
+                <tr>
+                    <td><strong>Embedding vs Referencing</strong></td>
+                    <td>Embed related data in document vs store reference (like foreign key)</td>
+                    <td>Critical! Know when to embed (1:few, always accessed together) vs reference (1:many, independent access)</td>
+                </tr>
+                <tr>
+                    <td><strong>Indexing</strong></td>
+                    <td>Create indexes on frequently queried fields</td>
+                    <td>"How do you optimize MongoDB queries?" → Indexes on userId, status, createdAt</td>
+                </tr>
+                <tr>
+                    <td><strong>Aggregation Pipeline</strong></td>
+                    <td>Data processing pipeline for analytics</td>
+                    <td>Know $match, $group, $project, $lookup stages</td>
+                </tr>
+                <tr>
+                    <td><strong>Transactions</strong></td>
+                    <td>Multi-document ACID transactions (since v4.0)</td>
+                    <td>"MongoDB has no transactions" is outdated. It does, but with caveats.</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- SECTION: Why Redis -->
+        <section id="why-redis">
+            <h2>⚡ Why Redis?</h2>
+
+            <div class="interview-question">
+                "Why do you need Redis when you already have MongoDB?"
+            </div>
+
+            <h3>The Core Answer</h3>
+            <div class="highlight">
+                <strong>Redis and MongoDB serve different purposes:</strong>
+                <ul>
+                    <li><strong>MongoDB:</strong> Persistent, durable storage for data that must survive restarts</li>
+                    <li><strong>Redis:</strong> Lightning-fast in-memory store for temporary data and caching</li>
+                </ul>
+            </div>
+
+            <h3>Redis Use Cases in This Project</h3>
+            <div class="tech-card">
+                <div class="card">
+                    <h4>🛒 Shopping Cart Storage</h4>
+                    <p><strong>Data Structure:</strong> Hash</p>
+                    <p><strong>Why Redis?</strong> Carts are temporary, frequently updated, and don't need durability. If a cart is lost, user just re-adds items. Redis Hash allows O(1) add/remove/update per item.</p>
+                    <pre><code>HSET cart:user_123 prod_456 2
+HSET cart:user_123 prod_789 1
+EXPIRE cart:user_123 86400  // 24 hour TTL</code></pre>
+                </div>
+                <div class="card">
+                    <h4>📦 Product Catalog Cache</h4>
+                    <p><strong>Data Structure:</strong> String (JSON)</p>
+                    <p><strong>Why Redis?</strong> Products are read 1000x more than written. Cache in Redis → sub-millisecond reads. MongoDB handles only cache misses.</p>
+                    <pre><code>GET product:prod_456
+// Returns: {"name":"Keyboard","price":149.99,...}
+
+// Cache-aside pattern:
+// 1. Check Redis → if HIT, return
+// 2. If MISS → fetch from MongoDB → store in Redis → return</code></pre>
+                </div>
+                <div class="card">
+                    <h4>🚦 API Rate Limiting</h4>
+                    <p><strong>Data Structure:</strong> String with INCR</p>
+                    <p><strong>Why Redis?</strong> Rate limiting needs atomic counters with expiration. Redis INCR is atomic, and TTL auto-resets windows.</p>
+                    <pre><code>// Sliding window rate limit
+INCR ratelimit:user_123:minute
+EXPIRE ratelimit:user_123:minute 60
+// If count > 100, reject request</code></pre>
+                </div>
+                <div class="card">
+                    <h4>🤖 AI Recommendations Cache</h4>
+                    <p><strong>Data Structure:</strong> String (JSON list)</p>
+                    <p><strong>Why Redis?</strong> AI calls are expensive (time & money). Cache recommendations for 1 hour. Same user, same recommendations, no AI call.</p>
+                    <pre><code>SET reco:user_123 '[{...},{...}]' EX 3600
+// 1 hour TTL - recommendations refreshed hourly</code></pre>
+                </div>
+            </div>
+
+            <h3>Redis Data Structures - When to Use What</h3>
+            <table>
+                <tr>
+                    <th>Data Structure</th>
+                    <th>Use Case</th>
+                    <th>Example in This Project</th>
+                </tr>
+                <tr>
+                    <td><strong>String</strong></td>
+                    <td>Simple key-value, counters, cached JSON</td>
+                    <td>Product cache, rate limit counters, user session</td>
+                </tr>
+                <tr>
+                    <td><strong>Hash</strong></td>
+                    <td>Object with multiple fields</td>
+                    <td>Shopping cart (field = productId, value = quantity)</td>
+                </tr>
+                <tr>
+                    <td><strong>List</strong></td>
+                    <td>Ordered collection, queues</td>
+                    <td>Recent orders for a user, notification queue</td>
+                </tr>
+                <tr>
+                    <td><strong>Set</strong></td>
+                    <td>Unique items, membership check</td>
+                    <td>Products user has viewed, tags on a product</td>
+                </tr>
+                <tr>
+                    <td><strong>Sorted Set</strong></td>
+                    <td>Ranked data, leaderboards</td>
+                    <td>Top selling products, search autocomplete</td>
+                </tr>
+            </table>
+
+            <div class="interview-question">
+                "What caching pattern are you using and why?"
+            </div>
+
+            <h3>Cache-Aside Pattern (Lazy Loading)</h3>
+            <div class="flow-diagram">
+┌──────────┐       ┌───────────┐       ┌──────────┐
+│  Client  │──────▶│   Redis   │       │ MongoDB  │
+└──────────┘       └───────────┘       └──────────┘
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │  Cache HIT?         │
+              │  Return cached data │
+              └─────────────────────┘
+                         │ MISS
+                         ▼
+              ┌─────────────────────┐
+              │  Fetch from MongoDB │
+              │  Store in Redis     │
+              │  Return data        │
+              └─────────────────────┘
+            </div>
+
+            <h3>Cache Invalidation Strategies</h3>
+            <table>
+                <tr>
+                    <th>Strategy</th>
+                    <th>How It Works</th>
+                    <th>When to Use</th>
+                </tr>
+                <tr>
+                    <td><strong>TTL (Time-To-Live)</strong></td>
+                    <td>Cache expires after X seconds automatically</td>
+                    <td>Data that can be slightly stale (product info, recommendations)</td>
+                </tr>
+                <tr>
+                    <td><strong>Write-Through</strong></td>
+                    <td>Update cache when database is updated</td>
+                    <td>Data that must be fresh (inventory count after order)</td>
+                </tr>
+                <tr>
+                    <td><strong>Delete on Write</strong></td>
+                    <td>Delete cache key when data changes, lazy reload</td>
+                    <td>Simpler than write-through, eventual consistency OK</td>
+                </tr>
+            </table>
+
+            <div class="highlight warning">
+                <strong>Cache Invalidation is Hard!</strong> "There are only two hard things in Computer Science: cache invalidation and naming things." — Phil Karlton
+                <br><br>
+                In this project, when stock is updated, we delete the product cache:
+                <code>redisTemplate.delete("product:" + productId)</code>
+            </div>
+        </section>
+
+        <!-- SECTION: Why Kafka -->
+        <section id="why-kafka">
+            <h2>📨 Why Kafka? (And Not REST Calls)</h2>
+
+            <div class="interview-question">
+                "Why use Kafka for service-to-service communication instead of direct REST API calls?"
+            </div>
+
+            <h3>The Fundamental Problem</h3>
+            <p>When Order Service creates an order, it needs to:</p>
+            <ol>
+                <li>Check inventory (Inventory Service)</li>
+                <li>Process payment (Payment Service)</li>
+                <li>Send confirmation (Notification Service)</li>
+                <li>Update analytics (Analytics Service)</li>
+            </ol>
+
+            <div class="comparison-grid">
+                <div class="bad">
+                    <h4>❌ Synchronous REST Calls</h4>
+                    <pre><code>// Order Service
+createOrder(order) {
+  inventoryService.reserve(order);  // 100ms
+  paymentService.charge(order);     // 500ms
+  notificationService.send(order);  // 200ms
+  analyticsService.record(order);   // 50ms
+  
+  // Total: 850ms minimum!
+  // Customer waits for ALL of this
+  
+  // What if notification service is down?
+  // ENTIRE ORDER FAILS!
+}</code></pre>
+                    <p><strong>Problems:</strong></p>
+                    <ul>
+                        <li>Customer waits for all services</li>
+                        <li>Tight coupling - all services must be up</li>
+                        <li>Single failure = entire operation fails</li>
+                        <li>Difficult to add new consumers</li>
+                    </ul>
+                </div>
+                <div class="good">
+                    <h4>✅ Asynchronous Kafka Events</h4>
+                    <pre><code>// Order Service
+createOrder(order) {
+  saveToMongoDB(order);             // 20ms
+  kafka.publish("order-placed", order); // 5ms
+  return "Order accepted";          // 25ms total!
+  
+  // Customer gets instant response
+  // Other services process async
+}
+
+// Inventory Service (separate process)
+@KafkaListener("order-placed")
+handleOrder(order) {
+  // Process at its own pace
+}</code></pre>
+                    <p><strong>Benefits:</strong></p>
+                    <ul>
+                        <li>Customer gets instant response</li>
+                        <li>Services are decoupled</li>
+                        <li>If notification is down, orders continue</li>
+                        <li>Easy to add new consumers</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Key Kafka Concepts</h3>
+            <table>
+                <tr>
+                    <th>Concept</th>
+                    <th>What It Is</th>
+                    <th>Interview Importance</th>
+                </tr>
+                <tr>
+                    <td><strong>Topic</strong></td>
+                    <td>A category/feed of messages. Like a table in a database.</td>
+                    <td>Topics: order-placed, order-confirmed, order-shipped, inventory-updated</td>
+                </tr>
+                <tr>
+                    <td><strong>Partition</strong></td>
+                    <td>Topics are split into partitions for parallelism. Messages in a partition are ordered.</td>
+                    <td>Critical for scaling! More partitions = more parallel consumers.</td>
+                </tr>
+                <tr>
+                    <td><strong>Consumer Group</strong></td>
+                    <td>Group of consumers that share the work. Each partition is consumed by one consumer in the group.</td>
+                    <td>"How do you scale Kafka consumers?" → Add more consumers to the group (up to partition count).</td>
+                </tr>
+                <tr>
+                    <td><strong>Offset</strong></td>
+                    <td>Position of a consumer in a partition. Kafka remembers where each consumer left off.</td>
+                    <td>"What happens if a consumer crashes?" → Restarts from last committed offset.</td>
+                </tr>
+                <tr>
+                    <td><strong>Retention</strong></td>
+                    <td>How long messages are kept. Default 7 days. Can replay old messages!</td>
+                    <td>"Can you reprocess all orders from last week?" → Yes! Reset offset and replay.</td>
+                </tr>
+            </table>
+
+            <h3>Event Flow in This System</h3>
+            <div class="flow-diagram">
+ORDER SERVICE                    KAFKA                         CONSUMERS
+─────────────                    ─────                         ─────────
+                                   
+     │                              │                              
+     │  POST /orders                │                              
+     ├─────────────────────────────▶│                              
+     │  publish: order-placed       │                              
+     │                              │                              
+     │                              │──────────────────────────────▶ INVENTORY SERVICE
+     │                              │                               │ consume: order-placed
+     │                              │                               │ reserve stock
+     │                              │                               │ publish: order-confirmed
+     │                              │◀──────────────────────────────┤
+     │                              │                              
+     │                              │──────────────────────────────▶ NOTIFICATION SERVICE
+     │                              │                               │ consume: order-confirmed
+     │                              │                               │ send email
+     │                              │                              
+     │                              │──────────────────────────────▶ ORDER SERVICE
+     │                              │                               │ consume: order-confirmed
+     │                              │                               │ update status in MongoDB
+     │                              │                              
+     │                              │──────────────────────────────▶ ANALYTICS SERVICE
+     │                              │                                 consume: order-confirmed
+     │                              │                                 update metrics
+            </div>
+
+            <div class="interview-question">
+                "What happens if Kafka consumer processes the same message twice?"
+            </div>
+
+            <h3>Idempotency - Critical Concept!</h3>
+            <p>Kafka guarantees <strong>at-least-once delivery</strong>. This means a message might be delivered multiple times (network issues, consumer crashes before committing offset). Your consumers MUST be idempotent!</p>
+
+            <div class="highlight danger">
+                <strong>Problem:</strong> If order-placed is processed twice, inventory is reserved twice!
+            </div>
+
+            <h4>Solution: Idempotent Consumer Design</h4>
+            <pre><code>@KafkaListener(topics = "order-placed")
+public void handleOrderPlaced(OrderPlacedEvent event) {
+    
+    // CHECK IF ALREADY PROCESSED (idempotency key)
+    if (processedOrderRepository.exists(event.getOrderId())) {
+        log.info("Order {} already processed, skipping", event.getOrderId());
+        return;  // Don't process again!
+    }
+    
+    // Process the order
+    reserveInventory(event);
+    
+    // Mark as processed
+    processedOrderRepository.save(event.getOrderId());
+}</code></pre>
+
+            <h3>Kafka vs Other Options</h3>
+            <table>
+                <tr>
+                    <th>Option</th>
+                    <th>Pros</th>
+                    <th>Cons</th>
+                    <th>When to Use</th>
+                </tr>
+                <tr>
+                    <td><strong>Kafka</strong></td>
+                    <td>High throughput, replay, durability, ordering</td>
+                    <td>Complex setup, operational overhead</td>
+                    <td>Event streaming, high volume, replay needed</td>
+                </tr>
+                <tr>
+                    <td><strong>RabbitMQ</strong></td>
+                    <td>Simple, flexible routing, low latency</td>
+                    <td>Lower throughput, no native replay</td>
+                    <td>Traditional message queuing, complex routing</td>
+                </tr>
+                <tr>
+                    <td><strong>Redis Pub/Sub</strong></td>
+                    <td>Super simple, already have Redis</td>
+                    <td>No persistence, no replay, fire-and-forget</td>
+                    <td>Real-time notifications, chat, non-critical</td>
+                </tr>
+                <tr>
+                    <td><strong>REST Webhooks</strong></td>
+                    <td>Simple, no infrastructure</td>
+                    <td>Tight coupling, no retry, blocking</td>
+                    <td>Simple integrations, external APIs</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- SECTION: Why Spring Boot -->
+        <section id="why-springboot">
+            <h2>🍃 Why Spring Boot?</h2>
+
+            <div class="interview-question">
+                "Why did you choose Spring Boot over other frameworks?"
+            </div>
+
+            <h3>Spring Boot Advantages</h3>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Benefit</th>
+                </tr>
+                <tr>
+                    <td><strong>Auto-Configuration</strong></td>
+                    <td>Add spring-boot-starter-data-mongodb → MongoDB configured automatically</td>
+                </tr>
+                <tr>
+                    <td><strong>Production Ready</strong></td>
+                    <td>Health checks, metrics, externalized config out of the box</td>
+                </tr>
+                <tr>
+                    <td><strong>Ecosystem</strong></td>
+                    <td>Spring Cloud (service discovery, config), Spring Security, Spring Data</td>
+                </tr>
+                <tr>
+                    <td><strong>Industry Standard</strong></td>
+                    <td>Most Java backend jobs use Spring. Relevant for interviews.</td>
+                </tr>
+                <tr>
+                    <td><strong>Excellent Integration</strong></td>
+                    <td>First-class support for Kafka, Redis, MongoDB, and every major tech</td>
+                </tr>
+            </table>
+
+            <h3>Key Spring Boot Concepts for Interview</h3>
+            <div class="tech-card">
+                <div class="card">
+                    <h4>Dependency Injection (DI)</h4>
+                    <p>Spring manages object creation. You declare dependencies, Spring wires them.</p>
+                    <pre><code>@Service
+public class OrderService {
+    @Autowired  // Spring injects this
+    private OrderRepository repository;
+}</code></pre>
+                </div>
+                <div class="card">
+                    <h4>Profiles</h4>
+                    <p>Different configurations for dev/staging/prod.</p>
+                    <pre><code>// application-dev.yml
+spring.data.mongodb.uri: localhost
+
+// application-prod.yml
+spring.data.mongodb.uri: mongodb-cluster</code></pre>
+                </div>
+                <div class="card">
+                    <h4>Actuator</h4>
+                    <p>Production-ready features: health, metrics, info.</p>
+                    <pre><code>GET /actuator/health
+{
+  "status": "UP",
+  "components": {
+    "mongo": {"status": "UP"},
+    "redis": {"status": "UP"}
+  }
+}</code></pre>
+                </div>
+                <div class="card">
+                    <h4>Exception Handling</h4>
+                    <p>Global exception handling with @ControllerAdvice</p>
+                    <pre><code>@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity handleNotFound(Exception e) {
+        return ResponseEntity.notFound().build();
+    }
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Authentication -->
+        <section id="authentication">
+            <h2>🔐 Authentication & Authorization</h2>
+            
+            <p>The system implements a comprehensive JWT-based authentication system with role-based access control (RBAC). This ensures secure access to protected resources and enables different permission levels for users and administrators.</p>
+
+            <h3>Why JWT Authentication?</h3>
+            <div class="comparison-grid">
+                <div class="card">
+                    <h4>✅ Stateless Architecture</h4>
+                    <p>No server-side session storage needed. Each request carries its own authentication context, making horizontal scaling effortless.</p>
+                </div>
+                <div class="card">
+                    <h4>✅ Microservices Friendly</h4>
+                    <p>Token can be validated independently by any service without database lookups or shared session state.</p>
+                </div>
+                <div class="card">
+                    <h4>✅ Cross-Origin Support</h4>
+                    <p>Works seamlessly across different domains, perfect for SPA frontends talking to backend APIs.</p>
+                </div>
+                <div class="card">
+                    <h4>✅ Rich Claims</h4>
+                    <p>JWT payload carries user ID, roles, and expiration - enabling authorization decisions without extra queries.</p>
+                </div>
+            </div>
+
+            <h3>Authentication Flow</h3>
+            <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        JWT AUTHENTICATION FLOW                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌──────────┐     1. Login Request      ┌──────────────┐                   │
+│  │  Client  │ ───────────────────────▶  │ Auth Service │                   │
+│  │ (React)  │     email + password      └──────────────┘                   │
+│  └──────────┘                                  │                           │
+│       │                                        │ 2. Validate credentials   │
+│       │                                        │    Hash compare (BCrypt)  │
+│       │                                        ▼                           │
+│       │                               ┌──────────────┐                     │
+│       │                               │   MongoDB    │                     │
+│       │                               │   (Users)    │                     │
+│       │                               └──────────────┘                     │
+│       │                                        │                           │
+│       │    3. JWT Token Response               │                           │
+│       │ ◀─────────────────────────────────────┘                           │
+│       │    { accessToken, refreshToken,                                    │
+│       │      userId, email, roles }                                        │
+│       │                                                                     │
+│       │    4. Store tokens (localStorage)                                  │
+│       ▼                                                                     │
+│  ┌──────────┐     5. API Request + Bearer Token                            │
+│  │  Client  │ ───────────────────────────────────────────▶ ┌─────────────┐ │
+│  │          │     Authorization: Bearer &lt;JWT&gt;              │ Any Service │ │
+│  └──────────┘                                               └─────────────┘ │
+│                                                                    │        │
+│                    6. Validate JWT signature                       │        │
+│                       Extract userId, roles                        ▼        │
+│                                                          ┌─────────────────┐│
+│                    7. Check role permissions             │  Role Check:    ││
+│                       ADMIN vs USER                      │  @PreAuthorize  ││
+│                                                          └─────────────────┘│
+└─────────────────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h3>Security Components</h3>
+            <table>
+                <tr>
+                    <th>Component</th>
+                    <th>Purpose</th>
+                    <th>Details</th>
+                </tr>
+                <tr>
+                    <td><code>BCrypt Password Encoder</code></td>
+                    <td>Password Hashing</td>
+                    <td>One-way hashing with salt, prevents rainbow table attacks</td>
+                </tr>
+                <tr>
+                    <td><code>JwtTokenProvider</code></td>
+                    <td>Token Management</td>
+                    <td>Generates and validates JWT tokens using HMAC-SHA256</td>
+                </tr>
+                <tr>
+                    <td><code>JwtAuthenticationFilter</code></td>
+                    <td>Request Filtering</td>
+                    <td>Intercepts requests, validates tokens, sets security context</td>
+                </tr>
+                <tr>
+                    <td><code>RefreshToken</code></td>
+                    <td>Token Renewal</td>
+                    <td>Long-lived token to get new access tokens without re-login</td>
+                </tr>
+            </table>
+
+            <h3>Role-Based Access Control (RBAC)</h3>
+            <div class="tech-card">
+                <div class="card">
+                    <h4>👤 USER Role</h4>
+                    <ul>
+                        <li>Browse products</li>
+                        <li>Add items to cart</li>
+                        <li>Place orders</li>
+                        <li>View order history</li>
+                        <li>Get recommendations</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>👑 ADMIN Role</h4>
+                    <ul>
+                        <li>All USER permissions</li>
+                        <li>Add/Edit/Delete products</li>
+                        <li>Manage inventory stock</li>
+                        <li>Update product prices</li>
+                        <li>View/Manage all users</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <strong>Interview Tip:</strong> When discussing JWT security, mention: token expiration strategy (short-lived access + long-lived refresh), secure storage (HttpOnly cookies vs localStorage trade-offs), and token invalidation challenges (blacklists vs short expiry).
+            </div>
+        </section>
+
+        <!-- SECTION: Admin Panel -->
+        <section id="admin-panel">
+            <h2>👑 Admin Panel</h2>
+            
+            <p>The Admin Panel provides comprehensive product and user management capabilities. Only users with the ADMIN role can access these features.</p>
+
+            <h3>Admin Features</h3>
+            <div class="comparison-grid">
+                <div class="card">
+                    <h4>📦 Product Management</h4>
+                    <ul>
+                        <li>Create new products</li>
+                        <li>Update product details</li>
+                        <li>Change pricing</li>
+                        <li>Adjust stock levels</li>
+                        <li>Soft delete products</li>
+                        <li>Activate/Deactivate products</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>👥 User Management</h4>
+                    <ul>
+                        <li>View all registered users</li>
+                        <li>Enable/Disable accounts</li>
+                        <li>View user roles</li>
+                        <li>Monitor user activity</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Admin API Endpoints</h3>
+            <table>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>POST</code></td>
+                    <td>/api/admin/products</td>
+                    <td>Create a new product</td>
+                </tr>
+                <tr>
+                    <td><code>PUT</code></td>
+                    <td>/api/admin/products/{id}</td>
+                    <td>Update product details</td>
+                </tr>
+                <tr>
+                    <td><code>PATCH</code></td>
+                    <td>/api/admin/products/{id}/price</td>
+                    <td>Update product price</td>
+                </tr>
+                <tr>
+                    <td><code>PATCH</code></td>
+                    <td>/api/admin/products/{id}/stock</td>
+                    <td>Adjust stock quantity (+/-)</td>
+                </tr>
+                <tr>
+                    <td><code>DELETE</code></td>
+                    <td>/api/admin/products/{id}</td>
+                    <td>Soft delete product</td>
+                </tr>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td>/api/admin/users</td>
+                    <td>List all users</td>
+                </tr>
+                <tr>
+                    <td><code>PATCH</code></td>
+                    <td>/api/admin/users/{id}/status</td>
+                    <td>Enable/Disable user</td>
+                </tr>
+            </table>
+
+            <h3>Stock Management with Optimistic Locking</h3>
+            <div class="code-container">
+                <pre><code>// Adjusting stock with atomic operations
+public Product adjustStock(String productId, int adjustment) {
+    Product product = productRepository.findById(productId)
+        .orElseThrow(() -> new RuntimeException("Product not found"));
+    
+    int newQuantity = product.getStockQuantity() + adjustment;
+    if (newQuantity < 0) {
+        throw new RuntimeException("Insufficient stock");
+    }
+    
+    product.setStockQuantity(newQuantity);
+    return productRepository.save(product);
+}</code></pre>
+            </div>
+
+            <div class="highlight">
+                <strong>Default Admin Credentials:</strong> The system creates a default admin user on startup: <code>admin@orderly.com</code> / <code>admin123</code>. Change this immediately in production!
+            </div>
+        </section>
+
+        <!-- SECTION: Search -->
+        <section id="search">
+            <h2>🔍 Search with Elasticsearch</h2>
+            
+            <p>The system integrates Elasticsearch for powerful full-text search capabilities, providing fast and relevant product search results with features like autocomplete and fuzzy matching.</p>
+
+            <h3>Why Elasticsearch for Search?</h3>
+            <div class="comparison-grid">
+                <div class="card">
+                    <h4>✅ Full-Text Search</h4>
+                    <p>Tokenization, stemming, and relevance scoring. "running shoes" matches "shoe for runners".</p>
+                </div>
+                <div class="card">
+                    <h4>✅ Fuzzy Matching</h4>
+                    <p>Handles typos gracefully. "laptpo" still finds "laptop" products.</p>
+                </div>
+                <div class="card">
+                    <h4>✅ Autocomplete</h4>
+                    <p>Edge n-gram tokenization enables instant suggestions as users type.</p>
+                </div>
+                <div class="card">
+                    <h4>✅ Blazing Fast</h4>
+                    <p>Inverted index enables sub-millisecond search across millions of documents.</p>
+                </div>
+            </div>
+
+            <h3>Search Architecture</h3>
+            <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SEARCH FLOW                                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌────────────┐                                                             │
+│  │   Admin    │                                                             │
+│  │  Creates   │                                                             │
+│  │  Product   │                                                             │
+│  └────────────┘                                                             │
+│        │                                                                     │
+│        ▼                                                                     │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                     Inventory Service                                   │ │
+│  │  ┌──────────────┐      ┌───────────────────┐      ┌─────────────────┐  │ │
+│  │  │   MongoDB    │      │  ProductSearch    │      │  Elasticsearch  │  │ │
+│  │  │   (Source    │ ───▶ │     Service       │ ───▶ │    (Index)      │  │ │
+│  │  │   of Truth)  │      │  indexProduct()   │      │                 │  │ │
+│  │  └──────────────┘      └───────────────────┘      └─────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│  ┌────────────┐         ┌─────────────────────────────────────────────────┐ │
+│  │   User     │         │              Search Flow                        │ │
+│  │  Types     │  ─────▶ │  /api/search?query=laptop&category=electronics  │ │
+│  │ "laptop"   │         └─────────────────────────────────────────────────┘ │
+│  └────────────┘                           │                                  │
+│                                           ▼                                  │
+│                               ┌───────────────────┐                          │
+│                               │  Elasticsearch    │                          │
+│                               │  Multi-Match Query│                          │
+│                               │  + Fuzzy + Boost  │                          │
+│                               └───────────────────┘                          │
+│                                           │                                  │
+│                                           ▼                                  │
+│                               ┌───────────────────┐                          │
+│                               │  Ranked Results   │                          │
+│                               │  by Relevance     │                          │
+│                               └───────────────────┘                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h3>Search API Endpoints</h3>
+            <table>
+                <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td>/api/search?query=laptop</td>
+                    <td>Search products by keyword</td>
+                </tr>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td>/api/search?query=laptop&category=electronics</td>
+                    <td>Search with category filter</td>
+                </tr>
+                <tr>
+                    <td><code>GET</code></td>
+                    <td>/api/search/suggestions?prefix=lap</td>
+                    <td>Get autocomplete suggestions</td>
+                </tr>
+            </table>
+
+            <h3>Elasticsearch Document Mapping</h3>
+            <div class="code-container">
+                <pre><code>@Document(indexName = "products")
+public class ProductDocument {
+    @Id
+    private String id;
+    
+    @Field(type = FieldType.Keyword)
+    private String sku;
+    
+    @Field(type = FieldType.Text, analyzer = "standard")
+    private String name;
+    
+    @Field(type = FieldType.Text, analyzer = "standard")
+    private String description;
+    
+    @Field(type = FieldType.Keyword)
+    private String category;
+    
+    @Field(type = FieldType.Double)
+    private Double price;
+    
+    @Field(type = FieldType.Integer)
+    private Integer stockQuantity;
+    
+    @Field(type = FieldType.Boolean)
+    private Boolean active;
+}</code></pre>
+            </div>
+
+            <h3>Graceful Degradation</h3>
+            <div class="highlight">
+                <strong>Fallback Strategy:</strong> If Elasticsearch is unavailable, the system falls back to MongoDB regex-based search. This ensures the application remains functional even without Elasticsearch, though with reduced search capabilities.
+            </div>
+
+            <div class="tech-card">
+                <div class="card">
+                    <h4>🟢 With Elasticsearch</h4>
+                    <ul>
+                        <li>Full-text search with relevance scoring</li>
+                        <li>Fuzzy matching for typo tolerance</li>
+                        <li>Instant autocomplete suggestions</li>
+                        <li>Category facets and filters</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🟡 Fallback (MongoDB)</h4>
+                    <ul>
+                        <li>Regex-based text matching</li>
+                        <li>Case-insensitive search</li>
+                        <li>Basic category filtering</li>
+                        <li>No fuzzy matching or scoring</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Failure Handling -->
+        <section id="failure-handling">
+            <h2>💥 What Happens When Things Fail?</h2>
+
+            <div class="interview-question">
+                "What happens if Inventory Service is down when an order is placed?"
+            </div>
+
+            <h3>Scenario 1: Inventory Service is Down</h3>
+            <div class="flow-diagram">
+Customer ──▶ Order Service ──▶ MongoDB (save order, status: PENDING)
+                    │
+                    ▼
+               Kafka (publish order-placed)
+                    │
+                    ▼
+          Inventory Service [DOWN] ❌
+          
+── What happens? ──
+• Order is saved in MongoDB ✓
+• Event is stored in Kafka ✓
+• Customer gets "Order Accepted" ✓
+• Inventory Service is down, but Kafka RETAINS the message
+• When Inventory Service comes back up:
+  → Consumes the event from Kafka
+  → Processes the order
+  → Everything works!
+            </div>
+
+            <div class="highlight success">
+                <strong>This is the power of Kafka!</strong> Messages are persisted. When the consumer recovers, it picks up where it left off. No data loss.
+            </div>
+
+            <h3>Scenario 2: MongoDB is Down</h3>
+            <div class="flow-diagram">
+Customer ──▶ Order Service ──▶ MongoDB [DOWN] ❌
+                    │
+                    ▼
+              Order fails immediately
+              Return 503 Service Unavailable
+              
+── Why no Kafka magic here? ──
+• We MUST save the order before publishing event
+• No order in DB = nothing to process later
+• This is intentional: order creation is synchronous
+• Best practice: Return error, let customer retry
+            </div>
+
+            <h3>Scenario 3: Kafka is Down</h3>
+            <div class="flow-diagram">
+Customer ──▶ Order Service ──▶ MongoDB (save order) ✓
+                    │
+                    ▼
+               Kafka [DOWN] ❌
+               Publish fails!
+               
+── How to handle? ──
+
+Option 1: Fail the request
+  - Rollback MongoDB save
+  - Return 503 to customer
+  - Simple, but poor UX
+
+Option 2: Retry with backoff
+  - Keep trying to publish (async)
+  - Use a local fallback queue
+  - More complex, better resilience
+
+Option 3: Outbox Pattern (BEST)
+  - Save event to MongoDB "outbox" table
+  - Separate process polls outbox and publishes to Kafka
+  - Guaranteed delivery
+            </div>
+
+            <h3>Scenario 4: Duplicate Event Processing</h3>
+            <div class="flow-diagram">
+── Kafka delivers message twice (network hiccup, consumer crash) ──
+
+WRONG approach:
+  order-placed received
+  reserve inventory  ─┐
+                      ├──▶ Stock reduced TWICE! Bug!
+  order-placed received (duplicate)
+  reserve inventory  ─┘
+
+RIGHT approach (Idempotent Consumer):
+  order-placed received
+  check: is orderId already processed? NO
+  reserve inventory
+  mark orderId as processed  ✓
+
+  order-placed received (duplicate)
+  check: is orderId already processed? YES
+  skip processing  ✓
+            </div>
+
+            <h3>Scenario 5: Out of Stock After Order Placed</h3>
+            <div class="flow-diagram">
+Customer A places order ──▶ Kafka: order-placed (qty: 10)
+Customer B places order ──▶ Kafka: order-placed (qty: 10)
+
+Current stock: 15 units
+
+Inventory Service processes Customer A:
+  - Reserve 10 units ✓
+  - Stock now: 5 units
+  - Publish: order-confirmed
+
+Inventory Service processes Customer B:
+  - Try to reserve 10 units
+  - Only 5 available! ❌
+  - Publish: order-failed (reason: OUT_OF_STOCK)
+
+Order Service consumes order-failed:
+  - Update order status to FAILED
+  - Notification Service sends "Sorry" email
+            </div>
+
+            <div class="interview-question">
+                "How do you handle partial failures in a saga/distributed transaction?"
+            </div>
+
+            <h3>Saga Pattern for Distributed Transactions</h3>
+            <p>In microservices, you can't have ACID transactions across services. Instead, use the Saga pattern with compensating transactions.</p>
+
+            <div class="flow-diagram">
+ORDER SAGA (Happy Path):
+┌────────────────┐    ┌────────────────┐    ┌────────────────┐
+│ Create Order   │───▶│ Reserve Stock  │───▶│ Process Payment│───▶ SUCCESS
+└────────────────┘    └────────────────┘    └────────────────┘
+
+ORDER SAGA (Payment Fails):
+┌────────────────┐    ┌────────────────┐    ┌────────────────┐
+│ Create Order   │───▶│ Reserve Stock  │───▶│ Process Payment│ ❌ FAIL
+└────────────────┘    └────────────────┘    └────────────────┘
+                              │                      │
+                              ▼                      │
+                      ┌────────────────┐             │
+                      │ Release Stock  │◀────────────┘
+                      │ (Compensation) │    payment-failed event
+                      └────────────────┘
+                              │
+                              ▼
+                      ┌────────────────┐
+                      │ Cancel Order   │
+                      │ (Compensation) │
+                      └────────────────┘
+            </div>
+
+            <div class="highlight">
+                <strong>Compensating Transactions:</strong> Each step has a "undo" operation. If a later step fails, run compensations for all completed steps in reverse order.
+            </div>
+        </section>
+
+        <!-- SECTION: Interview Concepts -->
+        <section id="interview-concepts">
+            <h2>🎯 Key Interview Concepts</h2>
+
+            <h3>Concept 1: CAP Theorem</h3>
+            <div class="highlight">
+                <strong>CAP Theorem:</strong> A distributed system can only guarantee 2 of 3: Consistency, Availability, Partition Tolerance.
+                <br><br>
+                <strong>This system chooses:</strong> AP (Availability + Partition Tolerance)
+                <ul>
+                    <li>We accept eventual consistency (order status updates may be slightly delayed)</li>
+                    <li>We prioritize availability (orders can be placed even if some services are down)</li>
+                    <li>Partition tolerance is mandatory in distributed systems</li>
+                </ul>
+            </div>
+
+            <h3>Concept 2: Eventual Consistency</h3>
+            <p>In this system, data is <strong>eventually consistent</strong>:</p>
+            <ul>
+                <li>Order is created with status PENDING</li>
+                <li>Inventory Service processes it (async)</li>
+                <li>Order status becomes CONFIRMED (eventually)</li>
+                <li>There's a window where order is PENDING but will become CONFIRMED</li>
+            </ul>
+            <div class="interview-question">
+                "How do you handle eventual consistency in your system?"
+            </div>
+
+            <h3>Concept 3: Idempotency</h3>
+            <p>An operation is idempotent if doing it multiple times has the same effect as doing it once.</p>
+            <ul>
+                <li><strong>Idempotent:</strong> GET /orders/123 (reading is safe)</li>
+                <li><strong>Idempotent:</strong> PUT /orders/123 {status: "shipped"} (setting to same value)</li>
+                <li><strong>NOT Idempotent:</strong> POST /orders (creates new order each time)</li>
+                <li><strong>NOT Idempotent:</strong> Incrementing inventory (each call adds more)</li>
+            </ul>
+
+            <h3>Concept 4: Circuit Breaker Pattern</h3>
+            <p>Prevent cascading failures when a service is down.</p>
+            <div class="flow-diagram">
+Normal: CLOSED (requests pass through)
+         │
+         ▼ (failures exceed threshold)
+         
+Failures: OPEN (requests fail fast, don't call failing service)
+         │
+         ▼ (timeout expires, try again)
+         
+Recovery: HALF-OPEN (allow limited requests to test)
+         │
+         ├──▶ Success → CLOSED
+         └──▶ Failure → OPEN
+            </div>
+
+            <h3>Concept 5: Backpressure</h3>
+            <p>When producers are faster than consumers:</p>
+            <ul>
+                <li>Orders come in faster than Inventory Service can process</li>
+                <li>Kafka handles this naturally (stores messages until consumed)</li>
+                <li>Can scale consumers to catch up</li>
+                <li>Without Kafka: systems crash under load</li>
+            </ul>
+
+            <h3>Concept 6: Observability</h3>
+            <p>The three pillars:</p>
+            <table>
+                <tr>
+                    <th>Pillar</th>
+                    <th>What</th>
+                    <th>Tools</th>
+                </tr>
+                <tr>
+                    <td><strong>Logs</strong></td>
+                    <td>What happened, when</td>
+                    <td>ELK Stack, Loki</td>
+                </tr>
+                <tr>
+                    <td><strong>Metrics</strong></td>
+                    <td>Counts, gauges, histograms</td>
+                    <td>Prometheus, Grafana</td>
+                </tr>
+                <tr>
+                    <td><strong>Traces</strong></td>
+                    <td>Request path across services</td>
+                    <td>Jaeger, Zipkin</td>
+                </tr>
+            </table>
+            <div class="highlight">
+                <strong>Correlation ID:</strong> Generate a unique ID for each request. Pass it through all services. Find all logs for one request across all services.
+            </div>
+
+            <h3>Quick Reference: Interview Questions</h3>
+            <table>
+                <tr>
+                    <th>Question</th>
+                    <th>Key Points to Cover</th>
+                </tr>
+                <tr>
+                    <td>"Why microservices?"</td>
+                    <td>Independent scaling, deployment, team autonomy, tech flexibility, fault isolation</td>
+                </tr>
+                <tr>
+                    <td>"Why MongoDB over SQL?"</td>
+                    <td>Flexible schema, document model fits use case, horizontal scaling, high write throughput</td>
+                </tr>
+                <tr>
+                    <td>"Why Redis?"</td>
+                    <td>Caching (reduce DB load), session storage, rate limiting, sub-ms latency</td>
+                </tr>
+                <tr>
+                    <td>"Why Kafka over REST?"</td>
+                    <td>Async processing, decoupling, reliability, replay, backpressure handling</td>
+                </tr>
+                <tr>
+                    <td>"How do you handle failures?"</td>
+                    <td>Kafka persistence, idempotent consumers, saga pattern, circuit breakers, retries</td>
+                </tr>
+                <tr>
+                    <td>"How do you ensure consistency?"</td>
+                    <td>Eventual consistency model, idempotency keys, saga with compensations</td>
+                </tr>
+                <tr>
+                    <td>"How would you scale this?"</td>
+                    <td>Horizontal scaling of services, Kafka partitions, MongoDB sharding, Redis cluster</td>
+                </tr>
+                <tr>
+                    <td>"How do you debug distributed systems?"</td>
+                    <td>Correlation IDs, centralized logging, distributed tracing, metrics</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- SECTION: Docker Compose Setup -->
+        <section id="docker-compose">
+            <h2>🐳 Docker Compose Setup - Detailed Guide</h2>
+
+            <p>Docker Compose allows you to define and run multi-container applications. We'll set up 4 services that our microservices will connect to.</p>
+
+            <h3>Understanding the Architecture</h3>
+            <div class="flow-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                     DOCKER COMPOSE NETWORK                          │
+│                    (order-processing-network)                       │
+│                                                                     │
+│  ┌─────────────┐     ┌─────────────┐                               │
+│  │  ZOOKEEPER  │◄────│    KAFKA    │                               │
+│  │   :2181     │     │    :9092    │                               │
+│  │             │     │    :29092   │ (internal)                    │
+│  └─────────────┘     └─────────────┘                               │
+│                                                                     │
+│  ┌─────────────┐     ┌─────────────┐                               │
+│  │   MONGODB   │     │    REDIS    │                               │
+│  │   :27017    │     │    :6379    │                               │
+│  └─────────────┘     └─────────────┘                               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                    Exposed to Host Machine
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+   localhost:9092      localhost:27017       localhost:6379
+      (Kafka)            (MongoDB)             (Redis)
+            </div>
+
+            <h3>Docker Compose File Structure</h3>
+            <p>A Docker Compose file has these main sections:</p>
+            <pre><code>version: '3.8'              # Compose file version
+
+services:                    # Define each container
+  service-name:
+    image: image-name:tag    # Docker image to use
+    container_name: name     # Name for the container
+    ports:                   # Port mapping host:container
+      - "8080:8080"
+    environment:             # Environment variables
+      - VAR_NAME=value
+    volumes:                 # Persistent storage
+      - ./data:/data
+    depends_on:              # Start order
+      - other-service
+    networks:                # Network to join
+      - my-network
+
+networks:                    # Define networks
+  my-network:
+    driver: bridge
+
+volumes:                     # Define named volumes
+  my-volume:</code></pre>
+
+            <h3>Service 1: Zookeeper</h3>
+            <div class="highlight">
+                <strong>What is Zookeeper?</strong> Zookeeper is a coordination service that Kafka uses to:
+                <ul>
+                    <li>Track which brokers are alive</li>
+                    <li>Elect a controller broker</li>
+                    <li>Store topic configurations and partition info</li>
+                    <li>Manage consumer group offsets (older Kafka versions)</li>
+                </ul>
+            </div>
+
+            <table>
+                <tr>
+                    <th>Configuration</th>
+                    <th>Value</th>
+                    <th>Explanation</th>
+                </tr>
+                <tr>
+                    <td><code>image</code></td>
+                    <td><code>confluentinc/cp-zookeeper:7.5.0</code></td>
+                    <td>Confluent's Zookeeper image. Version 7.5.0 is stable.</td>
+                </tr>
+                <tr>
+                    <td><code>container_name</code></td>
+                    <td><code>zookeeper</code></td>
+                    <td>Easy to reference in logs and other services</td>
+                </tr>
+                <tr>
+                    <td><code>ports</code></td>
+                    <td><code>2181:2181</code></td>
+                    <td>Default Zookeeper client port</td>
+                </tr>
+                <tr>
+                    <td><code>ZOOKEEPER_CLIENT_PORT</code></td>
+                    <td><code>2181</code></td>
+                    <td>Port Zookeeper listens on for client connections</td>
+                </tr>
+                <tr>
+                    <td><code>ZOOKEEPER_TICK_TIME</code></td>
+                    <td><code>2000</code></td>
+                    <td>Basic time unit in milliseconds for heartbeats</td>
+                </tr>
+            </table>
+
+            <h3>Service 2: Kafka</h3>
+            <div class="highlight warning">
+                <strong>Kafka Configuration is Tricky!</strong> The most common issues are related to listener configuration. Pay close attention to <code>KAFKA_ADVERTISED_LISTENERS</code>.
+            </div>
+
+            <table>
+                <tr>
+                    <th>Configuration</th>
+                    <th>Value</th>
+                    <th>Explanation</th>
+                </tr>
+                <tr>
+                    <td><code>image</code></td>
+                    <td><code>confluentinc/cp-kafka:7.5.0</code></td>
+                    <td>Confluent's Kafka image, same version as Zookeeper</td>
+                </tr>
+                <tr>
+                    <td><code>KAFKA_BROKER_ID</code></td>
+                    <td><code>1</code></td>
+                    <td>Unique ID for this broker. In a cluster, each broker has different ID.</td>
+                </tr>
+                <tr>
+                    <td><code>KAFKA_ZOOKEEPER_CONNECT</code></td>
+                    <td><code>zookeeper:2181</code></td>
+                    <td>How Kafka finds Zookeeper. Uses container name!</td>
+                </tr>
+                <tr>
+                    <td><code>KAFKA_LISTENERS</code></td>
+                    <td><code>PLAINTEXT://0.0.0.0:29092,<br>PLAINTEXT_HOST://0.0.0.0:9092</code></td>
+                    <td>Interfaces Kafka binds to. Two listeners: internal and external.</td>
+                </tr>
+                <tr>
+                    <td><code>KAFKA_ADVERTISED_LISTENERS</code></td>
+                    <td><code>PLAINTEXT://kafka:29092,<br>PLAINTEXT_HOST://localhost:9092</code></td>
+                    <td><strong>Critical!</strong> What Kafka tells clients to connect to.</td>
+                </tr>
+                <tr>
+                    <td><code>KAFKA_LISTENER_SECURITY_PROTOCOL_MAP</code></td>
+                    <td><code>PLAINTEXT:PLAINTEXT,<br>PLAINTEXT_HOST:PLAINTEXT</code></td>
+                    <td>Maps listener names to security protocols</td>
+                </tr>
+                <tr>
+                    <td><code>KAFKA_INTER_BROKER_LISTENER_NAME</code></td>
+                    <td><code>PLAINTEXT</code></td>
+                    <td>Which listener brokers use to talk to each other</td>
+                </tr>
+                <tr>
+                    <td><code>KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR</code></td>
+                    <td><code>1</code></td>
+                    <td>Replication for internal topics. Set to 1 for single broker.</td>
+                </tr>
+            </table>
+
+            <div class="interview-question">
+                "What is the difference between KAFKA_LISTENERS and KAFKA_ADVERTISED_LISTENERS?"
+            </div>
+
+            <div class="comparison-grid">
+                <div class="card">
+                    <h4>KAFKA_LISTENERS</h4>
+                    <p>The interfaces/ports Kafka <strong>binds to</strong> (listens on).</p>
+                    <p>Think: "Where am I listening?"</p>
+                    <pre><code>0.0.0.0:9092  # Listen on all interfaces</code></pre>
+                </div>
+                <div class="card">
+                    <h4>KAFKA_ADVERTISED_LISTENERS</h4>
+                    <p>The address Kafka <strong>tells clients</strong> to use when connecting.</p>
+                    <p>Think: "What should clients connect to?"</p>
+                    <pre><code>localhost:9092  # Clients should use this</code></pre>
+                </div>
+            </div>
+
+            <h4>Why Two Listeners?</h4>
+            <div class="flow-diagram">
+From HOST machine (your Spring Boot app running locally):
+  └──▶ Connect to localhost:9092
+       └──▶ Kafka says "use localhost:9092" (PLAINTEXT_HOST)
+            └──▶ Works! ✓
+
+From ANOTHER CONTAINER (if services were in Docker):
+  └──▶ Connect to kafka:29092
+       └──▶ Kafka says "use kafka:29092" (PLAINTEXT)
+            └──▶ Works! ✓
+
+If you ONLY had localhost:9092:
+  Container ──▶ Connect to kafka:29092
+             └──▶ Kafka says "use localhost:9092"
+                  └──▶ Container tries localhost... FAILS! ✗
+                       (localhost in container != host machine)
+            </div>
+
+            <h3>Service 3: MongoDB</h3>
+            <table>
+                <tr>
+                    <th>Configuration</th>
+                    <th>Value</th>
+                    <th>Explanation</th>
+                </tr>
+                <tr>
+                    <td><code>image</code></td>
+                    <td><code>mongo:7.0</code></td>
+                    <td>Official MongoDB image, version 7.0</td>
+                </tr>
+                <tr>
+                    <td><code>ports</code></td>
+                    <td><code>27017:27017</code></td>
+                    <td>Default MongoDB port</td>
+                </tr>
+                <tr>
+                    <td><code>volumes</code></td>
+                    <td><code>mongodb_data:/data/db</code></td>
+                    <td><strong>Important!</strong> Persist data across container restarts</td>
+                </tr>
+                <tr>
+                    <td><code>MONGO_INITDB_ROOT_USERNAME</code></td>
+                    <td><code>admin</code></td>
+                    <td>(Optional) Root username for authentication</td>
+                </tr>
+                <tr>
+                    <td><code>MONGO_INITDB_ROOT_PASSWORD</code></td>
+                    <td><code>password</code></td>
+                    <td>(Optional) Root password. For local dev, can skip auth.</td>
+                </tr>
+            </table>
+
+            <div class="highlight">
+                <strong>Volume Mount Explained:</strong>
+                <ul>
+                    <li><code>mongodb_data:/data/db</code> → Named volume. Docker manages the location.</li>
+                    <li><code>./mongo-data:/data/db</code> → Bind mount. Data stored in your project folder.</li>
+                    <li>Without volume: Data is LOST when container is removed!</li>
+                </ul>
+            </div>
+
+            <h3>Service 4: Redis</h3>
+            <table>
+                <tr>
+                    <th>Configuration</th>
+                    <th>Value</th>
+                    <th>Explanation</th>
+                </tr>
+                <tr>
+                    <td><code>image</code></td>
+                    <td><code>redis:7.2-alpine</code></td>
+                    <td>Alpine = smaller image (~30MB vs ~130MB)</td>
+                </tr>
+                <tr>
+                    <td><code>ports</code></td>
+                    <td><code>6379:6379</code></td>
+                    <td>Default Redis port</td>
+                </tr>
+                <tr>
+                    <td><code>command</code></td>
+                    <td><code>redis-server --appendonly yes</code></td>
+                    <td>Enable AOF persistence (data survives restart)</td>
+                </tr>
+                <tr>
+                    <td><code>volumes</code></td>
+                    <td><code>redis_data:/data</code></td>
+                    <td>Persist Redis data</td>
+                </tr>
+            </table>
+
+            <div class="highlight">
+                <strong>Redis Persistence Options:</strong>
+                <ul>
+                    <li><strong>RDB (Snapshotting):</strong> Periodic snapshots. Default. Fast recovery but can lose recent data.</li>
+                    <li><strong>AOF (Append Only File):</strong> Logs every write. Slower but minimal data loss.</li>
+                    <li><strong>Both:</strong> Best durability. Use AOF for recovery, RDB for backups.</li>
+                    <li><strong>None:</strong> In-memory only. Fast but all data lost on restart.</li>
+                </ul>
+                For this project, <code>--appendonly yes</code> ensures cart data survives container restarts.
+            </div>
+
+            <h3>Networks in Docker Compose</h3>
+            <pre><code>networks:
+  order-processing-network:
+    driver: bridge</code></pre>
+
+            <p><strong>Why create a custom network?</strong></p>
+            <ul>
+                <li><strong>Service Discovery:</strong> Containers can reach each other by service name (e.g., <code>kafka:9092</code>)</li>
+                <li><strong>Isolation:</strong> Only containers in this network can communicate</li>
+                <li><strong>DNS Resolution:</strong> Docker provides automatic DNS for container names</li>
+            </ul>
+
+            <h3>depends_on - Service Start Order</h3>
+            <pre><code>kafka:
+  depends_on:
+    - zookeeper</code></pre>
+
+            <div class="highlight warning">
+                <strong>Important Limitation:</strong> <code>depends_on</code> only waits for the container to START, not for the service to be READY.
+                <br><br>
+                Kafka might start before Zookeeper is fully ready to accept connections!
+                <br><br>
+                <strong>Solutions:</strong>
+                <ul>
+                    <li>Use <code>depends_on</code> with <code>condition: service_healthy</code> (requires healthcheck)</li>
+                    <li>Add retry logic in your application</li>
+                    <li>For local dev, usually just wait a few seconds and it's fine</li>
+                </ul>
+            </div>
+
+            <h3>Complete Docker Compose Structure</h3>
+            <p>Here's the structure you need to create (implement it yourself!):</p>
+            <pre><code>version: '3.8'
+
+services:
+  zookeeper:
+    # image, container_name, ports, environment, networks
+
+  kafka:
+    # image, container_name, ports, environment, depends_on, networks
+
+  mongodb:
+    # image, container_name, ports, volumes, environment (optional), networks
+
+  redis:
+    # image, container_name, ports, command, volumes, networks
+
+networks:
+  order-processing-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:</code></pre>
+
+            <h3>Verification Commands</h3>
+            <table>
+                <tr>
+                    <th>Service</th>
+                    <th>Verification Command</th>
+                    <th>Expected Result</th>
+                </tr>
+                <tr>
+                    <td><strong>All Services</strong></td>
+                    <td><code>docker-compose ps</code></td>
+                    <td>All 4 services show "Up"</td>
+                </tr>
+                <tr>
+                    <td><strong>Zookeeper</strong></td>
+                    <td><code>docker exec zookeeper echo "ruok" | nc localhost 2181</code></td>
+                    <td>Returns "imok"</td>
+                </tr>
+                <tr>
+                    <td><strong>Kafka</strong></td>
+                    <td><code>docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list</code></td>
+                    <td>No error (empty list is OK)</td>
+                </tr>
+                <tr>
+                    <td><strong>MongoDB</strong></td>
+                    <td><code>docker exec mongodb mongosh --eval "db.runCommand({ping:1})"</code></td>
+                    <td>Returns { ok: 1 }</td>
+                </tr>
+                <tr>
+                    <td><strong>Redis</strong></td>
+                    <td><code>docker exec redis redis-cli PING</code></td>
+                    <td>Returns "PONG"</td>
+                </tr>
+            </table>
+
+            <h3>Kafka Topic Creation Test</h3>
+            <pre><code># Create a test topic
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 \
+  --create --topic test-topic --partitions 3 --replication-factor 1
+
+# List topics
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
+
+# Produce a message (type a message and press Enter, Ctrl+C to exit)
+docker exec -it kafka kafka-console-producer \
+  --bootstrap-server localhost:9092 --topic test-topic
+
+# Consume messages (in another terminal)
+docker exec kafka kafka-console-consumer \
+  --bootstrap-server localhost:9092 --topic test-topic --from-beginning</code></pre>
+
+            <h3>Common Issues and Solutions</h3>
+            <table>
+                <tr>
+                    <th>Issue</th>
+                    <th>Cause</th>
+                    <th>Solution</th>
+                </tr>
+                <tr>
+                    <td>Kafka can't connect to Zookeeper</td>
+                    <td>Zookeeper not ready yet</td>
+                    <td>Wait and retry, or add healthcheck</td>
+                </tr>
+                <tr>
+                    <td>Spring Boot can't connect to Kafka</td>
+                    <td>Wrong ADVERTISED_LISTENERS</td>
+                    <td>Ensure <code>localhost:9092</code> is advertised</td>
+                </tr>
+                <tr>
+                    <td>Data lost after restart</td>
+                    <td>No volumes configured</td>
+                    <td>Add volume mounts for MongoDB and Redis</td>
+                </tr>
+                <tr>
+                    <td>Port already in use</td>
+                    <td>Another service using the port</td>
+                    <td>Change host port (e.g., <code>9093:9092</code>)</td>
+                </tr>
+                <tr>
+                    <td>Container name conflict</td>
+                    <td>Old container with same name exists</td>
+                    <td><code>docker-compose down</code> or <code>docker rm &lt;name&gt;</code></td>
+                </tr>
+            </table>
+
+            <h3>Useful Docker Commands</h3>
+            <pre><code># Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f              # All services
+docker-compose logs -f kafka        # Just Kafka
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (WARNING: deletes all data!)
+docker-compose down -v
+
+# Restart a specific service
+docker-compose restart kafka
+
+# Enter a container shell
+docker exec -it mongodb bash
+docker exec -it redis sh            # Alpine uses sh, not bash</code></pre>
+        </section>
+
+        <section>
+            <h2>🚀 Next Steps</h2>
+            <p>Now that you understand the WHY behind every technology choice, you're ready to implement. Here's your starting point:</p>
+            <ol>
+                <li><strong>Set up Docker Compose</strong> with Kafka, Zookeeper, MongoDB, Redis</li>
+                <li><strong>Create Order Service</strong> with cart (Redis) and order creation (MongoDB + Kafka producer)</li>
+                <li><strong>Create Inventory Service</strong> as Kafka consumer with product caching (Redis)</li>
+                <li><strong>Add Notification Service</strong> listening to order events</li>
+                <li><strong>Add Recommendation Service</strong> with AI integration</li>
+            </ol>
+            <div class="highlight success">
+                <strong>Remember:</strong> The goal is not just to build, but to understand. For every line you write, ask yourself "Why am I doing this? What problem does this solve?"
+            </div>
+        </section>
+
+        <!-- SECTION: Implementation Progress -->
+        <section id="implementation">
+            <h2>🛠️ Implementation Progress</h2>
+            <p>Step-by-step implementation log with what was done, why, and key learnings.</p>
+
+            <h3>Step 1: Project Setup ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Created project structure, .gitignore, README, initialized Git repository</td>
+                </tr>
+                <tr>
+                    <td><strong>Why</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>.gitignore:</strong> Prevents committing compiled files, IDE configs, and sensitive data</li>
+                            <li><strong>README:</strong> Documents project purpose, architecture, and setup instructions</li>
+                            <li><strong>Directory structure:</strong> Separates concerns - each microservice is independent</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Files Created</strong></td>
+                    <td>
+                        <code>.gitignore</code>, <code>README.md</code>, directory structure for all 5 modules
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Commit</strong></td>
+                    <td><code>chore: initial project setup</code></td>
+                </tr>
+            </table>
+
+            <div class="highlight">
+                <strong>Interview Tip:</strong> Always start projects with proper structure and documentation. It shows professionalism and makes onboarding easier.
+            </div>
+
+            <h3>Step 2: Maven Multi-Module Setup ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Created parent POM and child POMs for all 5 modules</td>
+                </tr>
+                <tr>
+                    <td><strong>Why</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>Parent POM:</strong> Centralizes dependency versions, avoids duplication</li>
+                            <li><strong>Multi-module:</strong> Build all modules with single command, ensures version consistency</li>
+                            <li><strong>Spring Boot Parent:</strong> Provides sensible defaults and managed dependency versions</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Key Decisions</strong></td>
+                    <td>
+                        <ul>
+                            <li>Spring Boot 3.2.1 (latest stable)</li>
+                            <li>Java 17 (LTS version)</li>
+                            <li>Each service depends on common-lib for shared code</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Commit</strong></td>
+                    <td><code>build: add parent pom with spring boot 3.2</code></td>
+                </tr>
+            </table>
+
+            <h3>Step 3: Common Library ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Created shared DTOs, Events, and Constants used across all services</td>
+                </tr>
+                <tr>
+                    <td><strong>Why</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>Shared Events:</strong> OrderPlacedEvent, OrderConfirmedEvent, OrderFailedEvent - ensures consistent event contracts</li>
+                            <li><strong>DTOs:</strong> CartItemDto, ProductDto, ApiResponse - standardizes API responses</li>
+                            <li><strong>Constants:</strong> KafkaTopics, OrderStatus - prevents hardcoded strings</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Key Files</strong></td>
+                    <td>
+                        <code>OrderPlacedEvent.java</code>, <code>OrderConfirmedEvent.java</code>, <code>OrderFailedEvent.java</code>, 
+                        <code>CartItemDto.java</code>, <code>KafkaTopics.java</code>, <code>OrderStatus.java</code>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="highlight">
+                <strong>Design Pattern:</strong> Shared kernel pattern - common language used by all bounded contexts (services).
+            </div>
+
+            <h3>Step 4: Docker Compose Infrastructure ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Set up Zookeeper, Kafka, MongoDB, and Redis containers</td>
+                </tr>
+                <tr>
+                    <td><strong>Why</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>Docker Compose:</strong> One command to start all infrastructure</li>
+                            <li><strong>Named volumes:</strong> Data persists across restarts</li>
+                            <li><strong>Custom network:</strong> Services can reference each other by name</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Ports Exposed</strong></td>
+                    <td>
+                        <ul>
+                            <li>Kafka: <code>9092</code></li>
+                            <li>MongoDB: <code>27017</code></li>
+                            <li>Redis: <code>6379</code></li>
+                            <li>Zookeeper: <code>2181</code></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <h3>Step 5: Order Service ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Core service handling cart management and order creation</td>
+                </tr>
+                <tr>
+                    <td><strong>Technologies</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>MongoDB:</strong> Stores orders with embedded items and shipping address</li>
+                            <li><strong>Redis:</strong> Stores shopping carts with 24-hour TTL</li>
+                            <li><strong>Kafka Producer:</strong> Publishes OrderPlacedEvent</li>
+                            <li><strong>Kafka Consumer:</strong> Listens for OrderConfirmedEvent/OrderFailedEvent to update status</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Key Endpoints</strong></td>
+                    <td>
+                        <ul>
+                            <li><code>POST /api/cart/{userId}/items</code> - Add to cart</li>
+                            <li><code>GET /api/cart/{userId}</code> - View cart</li>
+                            <li><code>POST /api/orders</code> - Create order from cart</li>
+                            <li><code>GET /api/orders/{orderId}</code> - Get order status</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Port</strong></td>
+                    <td><code>8081</code></td>
+                </tr>
+            </table>
+
+            <div class="highlight success">
+                <strong>Cache-Aside Pattern:</strong> Cart is stored in Redis for fast access. When user creates order, cart is read from Redis, order saved to MongoDB, then cart cleared.
+            </div>
+
+            <h3>Step 6: Inventory Service ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Manages product catalog and stock reservation</td>
+                </tr>
+                <tr>
+                    <td><strong>Technologies</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>MongoDB:</strong> Stores products with stock quantities</li>
+                            <li><strong>Redis:</strong> Caches product data for fast reads</li>
+                            <li><strong>Kafka Consumer:</strong> Listens for OrderPlacedEvent</li>
+                            <li><strong>Kafka Producer:</strong> Publishes OrderConfirmedEvent or OrderFailedEvent</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Key Logic</strong></td>
+                    <td>
+                        <ul>
+                            <li>Receives order → checks stock availability</li>
+                            <li>If available → reserves stock → publishes OrderConfirmedEvent</li>
+                            <li>If insufficient → publishes OrderFailedEvent with reason</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Port</strong></td>
+                    <td><code>8082</code></td>
+                </tr>
+            </table>
+
+            <div class="interview-question">
+                "How do you handle concurrent stock reservations?"
+            </div>
+            <p>Stock is updated atomically using MongoDB's atomic operations. The <code>reservedQuantity</code> field tracks reserved stock separately from <code>stockQuantity</code>.</p>
+
+            <h3>Step 7: Notification Service ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Sends notifications for order events</td>
+                </tr>
+                <tr>
+                    <td><strong>Technologies</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>MongoDB:</strong> Stores notification history</li>
+                            <li><strong>Kafka Consumer:</strong> Listens for OrderConfirmedEvent and OrderFailedEvent</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Key Features</strong></td>
+                    <td>
+                        <ul>
+                            <li>Logs notifications (simulates email sending)</li>
+                            <li>Stores notification in MongoDB for audit trail</li>
+                            <li>Different messages for confirmed vs failed orders</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Port</strong></td>
+                    <td><code>8083</code></td>
+                </tr>
+            </table>
+
+            <h3>Step 8: Recommendation Service ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Provides personalized product recommendations using AI</td>
+                </tr>
+                <tr>
+                    <td><strong>Technologies</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>MongoDB:</strong> Reads order history for personalization</li>
+                            <li><strong>Redis:</strong> Caches recommendations (1 hour TTL)</li>
+                            <li><strong>AI (Ollama/OpenAI):</strong> Generates recommendations based on purchase history</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Key Endpoint</strong></td>
+                    <td><code>GET /api/recommendations/{userId}</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Port</strong></td>
+                    <td><code>8084</code></td>
+                </tr>
+            </table>
+
+            <div class="highlight warning">
+                <strong>Cost Optimization:</strong> AI calls are expensive. Recommendations are cached in Redis for 1 hour. Same user hitting the endpoint multiple times doesn't trigger new AI calls.
+            </div>
+
+            <h3>Step 9: Kafka Configuration ✅</h3>
+            <table>
+                <tr><th>Aspect</th><th>Details</th></tr>
+                <tr>
+                    <td><strong>What</strong></td>
+                    <td>Configured Kafka producers and consumers with proper serialization</td>
+                </tr>
+                <tr>
+                    <td><strong>Challenge Solved</strong></td>
+                    <td>
+                        <ul>
+                            <li><strong>Problem:</strong> JsonDeserializer needs type information to deserialize events</li>
+                            <li><strong>Solution:</strong> Custom ConsumerFactory per event type with explicit type binding</li>
+                            <li><strong>Each listener uses:</strong> <code>containerFactory = "confirmedListenerFactory"</code></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Topics Created</strong></td>
+                    <td>
+                        <code>order.placed</code>, <code>order.confirmed</code>, <code>order.failed</code>
+                    </td>
+                </tr>
+            </table>
+
+            <h3>Complete Event Flow (Verified ✅)</h3>
+            <div class="flow-diagram">
+USER ──▶ Order Service (8081)
+          │
+          ├── 1. Add to Cart (Redis)
+          │
+          ├── 2. Create Order (MongoDB) ──▶ Status: PENDING
+          │
+          └── 3. Publish: order.placed ──▶ KAFKA
+                                              │
+                                              ├──▶ Inventory Service (8082)
+                                              │    ├── Check stock
+                                              │    ├── Reserve quantity
+                                              │    └── Publish: order.confirmed
+                                              │                    │
+                                              │                    ├──▶ Order Service
+                                              │                    │    └── Update: CONFIRMED
+                                              │                    │
+                                              │                    └──▶ Notification Service (8083)
+                                              │                         └── Save notification
+                                              │
+                                              └──▶ (If insufficient stock)
+                                                   Publish: order.failed
+                                                        │
+                                                        ├──▶ Order Service
+                                                        │    └── Update: FAILED
+                                                        │
+                                                        └──▶ Notification Service
+                                                             └── Save "Sorry" notification
+            </div>
+
+            <h3>Testing Results Summary ✅</h3>
+            <table>
+                <tr>
+                    <th>Test Scenario</th>
+                    <th>Result</th>
+                    <th>Verification</th>
+                </tr>
+                <tr>
+                    <td>Add to Cart</td>
+                    <td>✅ Pass</td>
+                    <td>Item stored in Redis with TTL</td>
+                </tr>
+                <tr>
+                    <td>View Cart</td>
+                    <td>✅ Pass</td>
+                    <td>Returns items with total price</td>
+                </tr>
+                <tr>
+                    <td>Create Order (Success)</td>
+                    <td>✅ Pass</td>
+                    <td>Order status: PENDING → CONFIRMED</td>
+                </tr>
+                <tr>
+                    <td>Create Order (Failure)</td>
+                    <td>✅ Pass</td>
+                    <td>Order status: PENDING → FAILED with reason</td>
+                </tr>
+                <tr>
+                    <td>Inventory Update</td>
+                    <td>✅ Pass</td>
+                    <td>Stock correctly reserved</td>
+                </tr>
+                <tr>
+                    <td>Notification Created</td>
+                    <td>✅ Pass</td>
+                    <td>Notification saved to MongoDB</td>
+                </tr>
+                <tr>
+                    <td>Recommendations</td>
+                    <td>✅ Pass</td>
+                    <td>Personalized recommendations returned</td>
+                </tr>
+            </table>
+
+        </section>
+
+        <!-- SECTION: API Reference -->
+        <section id="api-reference">
+            <h2>📡 API Reference</h2>
+
+            <h3>Order Service (Port 8081)</h3>
+            <table>
+                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+                <tr><td>GET</td><td><code>/api/ping</code></td><td>Health check</td></tr>
+                <tr><td>POST</td><td><code>/api/cart/{userId}/items</code></td><td>Add item to cart</td></tr>
+                <tr><td>GET</td><td><code>/api/cart/{userId}</code></td><td>Get cart contents</td></tr>
+                <tr><td>DELETE</td><td><code>/api/cart/{userId}</code></td><td>Clear cart</td></tr>
+                <tr><td>POST</td><td><code>/api/orders</code></td><td>Create order from cart</td></tr>
+                <tr><td>GET</td><td><code>/api/orders/{orderId}</code></td><td>Get order by ID</td></tr>
+                <tr><td>GET</td><td><code>/api/users/{userId}/orders</code></td><td>Get user's orders</td></tr>
+            </table>
+
+            <h3>Inventory Service (Port 8082)</h3>
+            <table>
+                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+                <tr><td>POST</td><td><code>/api/products</code></td><td>Create product</td></tr>
+                <tr><td>GET</td><td><code>/api/products</code></td><td>List all products</td></tr>
+                <tr><td>GET</td><td><code>/api/products/{id}</code></td><td>Get product by ID</td></tr>
+            </table>
+
+            <h3>Notification Service (Port 8083)</h3>
+            <table>
+                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+                <tr><td>GET</td><td><code>/actuator/health</code></td><td>Health check</td></tr>
+            </table>
+
+            <h3>Recommendation Service (Port 8084)</h3>
+            <table>
+                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+                <tr><td>GET</td><td><code>/api/recommendations/{userId}</code></td><td>Get personalized recommendations</td></tr>
+                <tr><td>GET</td><td><code>/actuator/health</code></td><td>Health check</td></tr>
+            </table>
+
+            <h3>Sample API Calls</h3>
+            <pre><code># Create Product
+curl -X POST http://localhost:8082/api/products \
+  -H "Content-Type: application/json" \
+  -d '{"sku":"LAPTOP-001","name":"MacBook Pro","price":1999.99,"stockQuantity":10}'
+
+# Add to Cart
+curl -X POST http://localhost:8081/api/cart/user123/items \
+  -H "Content-Type: application/json" \
+  -d '{"productId":"<PRODUCT_ID>","productName":"MacBook Pro","quantity":1,"price":1999.99}'
+
+# View Cart
+curl http://localhost:8081/api/cart/user123
+
+# Create Order
+curl -X POST http://localhost:8081/api/orders \
+  -H "Content-Type: application/json" \
+  -H "X-User-Id: user123" \
+  -d '{"shippingAddress":{"fullName":"John Doe","street":"123 Main St","city":"NYC","state":"NY","zipCode":"10001","country":"USA","phone":"555-1234"}}'
+
+# Check Order Status
+curl http://localhost:8081/api/orders/<ORDER_ID>
+
+# Get Recommendations
+curl http://localhost:8084/api/recommendations/user123</code></pre>
+        </section>
+
+    </div>
+
+    <footer style="text-align: center; padding: 2rem; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
+        <p>Orderly - Event-Driven Order Processing System | SDE-2 Backend Interview Preparation</p>
+    </footer>
+</body>
+</html>
