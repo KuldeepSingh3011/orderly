@@ -5,14 +5,11 @@ spring:
   application:
     name: order-service
 
-  # MongoDB Configuration
+  # MongoDB and Redis Configuration
   data:
     mongodb:
       uri: mongodb://localhost:27017/orderly
       database: orderly
-
-  # Redis Configuration
-  data:
     redis:
       host: localhost
       port: 6379
