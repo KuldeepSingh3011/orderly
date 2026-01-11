@@ -184,26 +184,32 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="login-features">
-          <div className="feature">
-            <div className="feature-icon">🛒</div>
-            <div className="feature-text">
-              <strong>Easy Shopping</strong>
-              <span>Browse products and add to cart</span>
-            </div>
+        <div className="login-side">
+          <div className="login-tagline">
+            <h2>Your smart shopping companion</h2>
+            <p>Experience seamless e-commerce with powerful features</p>
           </div>
-          <div className="feature">
-            <div className="feature-icon">📦</div>
-            <div className="feature-text">
-              <strong>Order Tracking</strong>
-              <span>Track your orders in real-time</span>
+          <div className="login-features">
+            <div className="feature">
+              <div className="feature-icon">🛒</div>
+              <div className="feature-text">
+                <strong>Easy Shopping</strong>
+                <span>Browse and add to cart</span>
+              </div>
             </div>
-          </div>
-          <div className="feature">
-            <div className="feature-icon">✨</div>
-            <div className="feature-text">
-              <strong>AI Recommendations</strong>
-              <span>Personalized product suggestions</span>
+            <div className="feature">
+              <div className="feature-icon">📦</div>
+              <div className="feature-text">
+                <strong>Order Tracking</strong>
+                <span>Real-time updates</span>
+              </div>
+            </div>
+            <div className="feature">
+              <div className="feature-icon">✨</div>
+              <div className="feature-text">
+                <strong>AI Powered</strong>
+                <span>Smart recommendations</span>
+              </div>
             </div>
           </div>
         </div>
