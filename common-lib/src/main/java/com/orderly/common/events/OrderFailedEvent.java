@@ -1,10 +1,5 @@
 package com.orderly.common.events;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.Instant;
 
 /**
@@ -12,10 +7,6 @@ import java.time.Instant;
  * Reasons: insufficient stock, payment failure, etc.
  * Consumed by: OrderService (to update status), NotificationService (to notify customer)
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class OrderFailedEvent {
 
     private String eventId;
@@ -24,6 +15,57 @@ public class OrderFailedEvent {
     private String reason;
     private FailureType failureType;
     private Instant timestamp;
+
+    public OrderFailedEvent() {
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public FailureType getFailureType() {
+        return failureType;
+    }
+
+    public void setFailureType(FailureType failureType) {
+        this.failureType = failureType;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
+    }
 
     public enum FailureType {
         INSUFFICIENT_STOCK,

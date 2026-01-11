@@ -1,0 +1,47 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: inventory-service
+
+  # MongoDB
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/orderly
+      database: orderly
+
+  # Redis for caching
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: inventory-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.orderly.common.events
+        spring.json.type.mapping: >
+          order.placed:com.orderly.common.events.OrderPlacedEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+# Logging
+logging:
+  level:
+    com.orderly: DEBUG
+    org.springframework.kafka: INFO
