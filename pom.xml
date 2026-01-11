@@ -29,6 +29,7 @@
 
         <!-- Versions for dependencies not managed by Spring Boot -->
         <springdoc.version>2.3.0</springdoc.version>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <modules>
