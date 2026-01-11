@@ -1,15 +1,13 @@
-package com.orderly.order.config;
+package com.orderly.notification.config;
 
 import com.orderly.common.events.OrderConfirmedEvent;
 import com.orderly.common.events.OrderFailedEvent;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
@@ -17,11 +15,8 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.orderly.common.constants.KafkaTopics.*;
-
 /**
- * Kafka configuration.
- * Creates topics and configures consumers.
+ * Kafka configuration for notification service.
  */
 @Configuration
 public class KafkaConfig {
@@ -31,31 +26,6 @@ public class KafkaConfig {
 
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
-
-    // Topic creation beans
-    @Bean
-    public NewTopic orderPlacedTopic() {
-        return TopicBuilder.name(ORDER_PLACED)
-                .partitions(3)
-                .replicas(1)
-                .build();
-    }
-
-    @Bean
-    public NewTopic orderConfirmedTopic() {
-        return TopicBuilder.name(ORDER_CONFIRMED)
-                .partitions(3)
-                .replicas(1)
-                .build();
-    }
-
-    @Bean
-    public NewTopic orderFailedTopic() {
-        return TopicBuilder.name(ORDER_FAILED)
-                .partitions(3)
-                .replicas(1)
-                .build();
-    }
 
     // Consumer factory for OrderConfirmedEvent
     @Bean

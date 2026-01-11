@@ -1,5 +1,8 @@
 package com.orderly.order.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orderly.common.dto.CartItemDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +26,13 @@ public class CartService {
     private static final String CART_KEY_PREFIX = "cart:";
     private static final long CART_TTL_HOURS = 24;
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper objectMapper;
 
-    public CartService(RedisTemplate<String, Object> redisTemplate) {
+    public CartService(RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     /**
@@ -36,8 +42,14 @@ public class CartService {
         String cartKey = getCartKey(userId);
         log.debug("Adding item {} to cart for user {}", item.getProductId(), userId);
 
-        redisTemplate.opsForHash().put(cartKey, item.getProductId(), item);
-        redisTemplate.expire(cartKey, CART_TTL_HOURS, TimeUnit.HOURS);
+        try {
+            String json = objectMapper.writeValueAsString(item);
+            redisTemplate.opsForHash().put(cartKey, item.getProductId(), json);
+            redisTemplate.expire(cartKey, CART_TTL_HOURS, TimeUnit.HOURS);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize cart item: {}", e.getMessage());
+            throw new RuntimeException("Failed to add item to cart", e);
+        }
     }
 
     /**
@@ -49,9 +61,14 @@ public class CartService {
         CartItemDto item = getCartItem(userId, productId);
         if (item != null) {
             item.setQuantity(quantity);
-            redisTemplate.opsForHash().put(cartKey, productId, item);
-            redisTemplate.expire(cartKey, CART_TTL_HOURS, TimeUnit.HOURS);
-            log.debug("Updated quantity for product {} to {} for user {}", productId, quantity, userId);
+            try {
+                String json = objectMapper.writeValueAsString(item);
+                redisTemplate.opsForHash().put(cartKey, productId, json);
+                redisTemplate.expire(cartKey, CART_TTL_HOURS, TimeUnit.HOURS);
+                log.debug("Updated quantity for product {} to {} for user {}", productId, quantity, userId);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to update cart item: {}", e.getMessage());
+            }
         }
     }
 
@@ -73,8 +90,11 @@ public class CartService {
 
         List<CartItemDto> items = new ArrayList<>();
         for (Object value : entries.values()) {
-            if (value instanceof CartItemDto) {
-                items.add((CartItemDto) value);
+            try {
+                CartItemDto item = objectMapper.readValue(value.toString(), CartItemDto.class);
+                items.add(item);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to deserialize cart item: {}", e.getMessage());
             }
         }
         return items;
@@ -85,8 +105,16 @@ public class CartService {
      */
     public CartItemDto getCartItem(String userId, String productId) {
         String cartKey = getCartKey(userId);
-        Object item = redisTemplate.opsForHash().get(cartKey, productId);
-        return item instanceof CartItemDto ? (CartItemDto) item : null;
+        Object value = redisTemplate.opsForHash().get(cartKey, productId);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(value.toString(), CartItemDto.class);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize cart item: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**

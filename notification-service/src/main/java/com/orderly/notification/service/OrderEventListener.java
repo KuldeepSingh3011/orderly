@@ -23,7 +23,7 @@ public class OrderEventListener {
         this.notificationService = notificationService;
     }
 
-    @KafkaListener(topics = KafkaTopics.ORDER_CONFIRMED, groupId = "notification-service-group")
+    @KafkaListener(topics = KafkaTopics.ORDER_CONFIRMED, containerFactory = "confirmedListenerFactory")
     public void handleOrderConfirmed(OrderConfirmedEvent event) {
         log.info("Received OrderConfirmedEvent for order: {}", event.getOrderId());
 
@@ -44,7 +44,7 @@ public class OrderEventListener {
         );
     }
 
-    @KafkaListener(topics = KafkaTopics.ORDER_FAILED, groupId = "notification-service-group")
+    @KafkaListener(topics = KafkaTopics.ORDER_FAILED, containerFactory = "failedListenerFactory")
     public void handleOrderFailed(OrderFailedEvent event) {
         log.info("Received OrderFailedEvent for order: {}", event.getOrderId());
 
