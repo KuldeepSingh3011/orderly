@@ -1,0 +1,204 @@
+version: '3.8'
+
+services:
+  # ============== Infrastructure ==============
+  
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: orderly-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: orderly-kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    depends_on:
+      - zookeeper
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7.0
+    container_name: orderly-mongodb
+    environment:
+      MONGO_INITDB_DATABASE: orderly
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - orderly-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: orderly-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - orderly-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: orderly-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - orderly-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ============== Backend Services ==============
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: orderly-auth-service
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRATION_MS: 3600000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: orderly-order-service
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    container_name: orderly-inventory-service
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      ELASTICSEARCH_ENABLED: "true"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: orderly-notification-service
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+  recommendation-service:
+    build:
+      context: ./recommendation-service
+      dockerfile: Dockerfile
+    container_name: orderly-recommendation-service
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/orderly
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+  # ============== Frontend ==============
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: orderly-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - order-service
+      - inventory-service
+      - recommendation-service
+    networks:
+      - orderly-network
+    restart: unless-stopped
+
+networks:
+  orderly-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
+  elasticsearch_data:
