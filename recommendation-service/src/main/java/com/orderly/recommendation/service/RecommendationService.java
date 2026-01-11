@@ -223,9 +223,20 @@ public class RecommendationService {
         dto.setDescription(doc.getString("description"));
         dto.setCategory(doc.getString("category"));
         
+        // Handle various price formats from MongoDB
         Object priceObj = doc.get("price");
-        if (priceObj instanceof Number) {
-            dto.setPrice(new BigDecimal(priceObj.toString()));
+        if (priceObj != null) {
+            if (priceObj instanceof org.bson.types.Decimal128) {
+                dto.setPrice(((org.bson.types.Decimal128) priceObj).bigDecimalValue());
+            } else if (priceObj instanceof Number) {
+                dto.setPrice(new BigDecimal(priceObj.toString()));
+            } else {
+                try {
+                    dto.setPrice(new BigDecimal(priceObj.toString()));
+                } catch (Exception e) {
+                    log.warn("Could not parse price: {}", priceObj);
+                }
+            }
         }
         
         Integer stockQty = doc.getInteger("stockQuantity", 0);
