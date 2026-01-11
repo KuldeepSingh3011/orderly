@@ -14,9 +14,16 @@ spring:
       host: localhost
       port: 6379
 
-  # Elasticsearch
+  # Elasticsearch (disabled by default - enable with spring.elasticsearch.enabled=true)
   elasticsearch:
+    enabled: false
     uris: localhost:9200
+  
+  # Disable auto-configuration when elasticsearch is not enabled
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
 
   # Kafka
   kafka:

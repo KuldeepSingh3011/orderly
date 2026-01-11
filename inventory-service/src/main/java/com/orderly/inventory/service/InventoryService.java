@@ -5,6 +5,7 @@ import com.orderly.inventory.repository.ProductRepository;
 import com.orderly.inventory.search.ProductSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +21,17 @@ public class InventoryService {
     private final ProductRepository productRepository;
     private final ProductSearchService searchService;
 
-    public InventoryService(ProductRepository productRepository, ProductSearchService searchService) {
+    @Autowired
+    public InventoryService(ProductRepository productRepository, 
+                           @Autowired(required = false) ProductSearchService searchService) {
         this.productRepository = productRepository;
         this.searchService = searchService;
     }
 
     private void indexProduct(Product product) {
+        if (searchService == null) {
+            return; // Elasticsearch not configured
+        }
         try {
             searchService.indexProduct(product);
         } catch (Exception e) {

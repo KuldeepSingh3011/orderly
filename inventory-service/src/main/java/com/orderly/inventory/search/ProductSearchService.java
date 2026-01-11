@@ -3,6 +3,8 @@ package com.orderly.inventory.search;
 import com.orderly.inventory.entity.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -10,10 +12,12 @@ import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@ConditionalOnProperty(name = "spring.elasticsearch.enabled", havingValue = "true", matchIfMissing = false)
 public class ProductSearchService {
 
     private static final Logger log = LoggerFactory.getLogger(ProductSearchService.class);
@@ -21,6 +25,7 @@ public class ProductSearchService {
     private final ProductSearchRepository searchRepository;
     private final ElasticsearchOperations elasticsearchOperations;
 
+    @Autowired
     public ProductSearchService(ProductSearchRepository searchRepository,
                                 ElasticsearchOperations elasticsearchOperations) {
         this.searchRepository = searchRepository;
