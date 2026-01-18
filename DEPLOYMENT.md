@@ -114,6 +114,31 @@ docker-compose -f docker-compose.prod.yml down
 
 ## Option 3: Cloud Deployment
 
+### 🆓 Oracle Cloud Free Tier (Recommended for Free Hosting)
+
+**Complete step-by-step guide**: See [ORACLE_CLOUD_DEPLOYMENT.md](./ORACLE_CLOUD_DEPLOYMENT.md)
+
+**Quick Summary:**
+- **Always Free**: 4 ARM VMs, 24GB RAM, 200GB storage
+- **No time limits** - Services run 24/7
+- **Perfect for production** - Full control, no sleeping
+
+**Quick Start:**
+```bash
+# 1. Create Oracle Cloud account (cloud.oracle.com)
+# 2. Create ARM VM (4 OCPU, 24GB RAM)
+# 3. SSH in and run:
+git clone https://github.com/KuldeepSingh3011/orderly.git
+cd orderly
+sudo apt update && sudo apt install -y docker.io docker-compose
+sudo usermod -aG docker $USER
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+**Your app will be live at:** `http://YOUR_PUBLIC_IP`
+
+---
+
 ### AWS (ECS/EKS)
 
 1. **Push images to ECR**:
