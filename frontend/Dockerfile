@@ -13,7 +13,7 @@ FROM nginx:alpine
 RUN apk add --no-cache gettext
 
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY default.conf.template /etc/nginx/templates/default.conf.template
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
