@@ -5,8 +5,9 @@ spring:
   application:
     name: auth-service
   data:
+    # Supports Railway's MONGO_URL/DATABASE_URL and standard SPRING_DATA_MONGODB_URI
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/orderly}
+      uri: ${SPRING_DATA_MONGODB_URI:${MONGO_URL:${DATABASE_URL:mongodb://localhost:27017/orderly}}}
       database: ${SPRING_DATA_MONGODB_DATABASE:orderly}
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}

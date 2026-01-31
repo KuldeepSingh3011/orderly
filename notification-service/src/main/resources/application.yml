@@ -6,9 +6,10 @@ spring:
     name: notification-service
 
   # MongoDB for notification history
+  # Supports Railway's MONGO_URL/DATABASE_URL and standard SPRING_DATA_MONGODB_URI
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/orderly}
+      uri: ${SPRING_DATA_MONGODB_URI:${MONGO_URL:${DATABASE_URL:mongodb://localhost:27017/orderly}}}
       database: ${SPRING_DATA_MONGODB_DATABASE:orderly}
 
   # Kafka
