@@ -6,16 +6,16 @@ spring:
     name: auth-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/orderly
-      database: orderly
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/orderly}
+      database: ${SPRING_DATA_MONGODB_DATABASE:orderly}
     redis:
-      host: localhost
-      port: 6379
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
 
 jwt:
-  secret: orderly-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256
-  access-token-expiration: 900000      # 15 minutes
-  refresh-token-expiration: 604800000  # 7 days
+  secret: ${JWT_SECRET:orderly-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:900000}      # 15 minutes
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000}  # 7 days
 
 logging:
   level:
