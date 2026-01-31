@@ -170,13 +170,16 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - auth-service
-      - order-service
-      - inventory-service
-      - recommendation-service
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     networks:
       - orderly-network
     restart: unless-stopped
+    # Wait for backend services to be ready (they'll be available via DNS even if not fully started)
 
 networks:
   orderly-network:
