@@ -6,6 +6,27 @@ resolver 127.0.0.11 valid=30s;
 # On Railway, set these as environment variables:
 # AUTH_SERVICE_URL, ORDER_SERVICE_URL, INVENTORY_SERVICE_URL, RECOMMENDATION_SERVICE_URL
 
+# Map environment variables to nginx variables with defaults
+map "$AUTH_SERVICE_URL" $auth_backend {
+    default "http://auth-service:8085";
+    "~." $AUTH_SERVICE_URL;
+}
+
+map "$ORDER_SERVICE_URL" $order_backend {
+    default "http://order-service:8081";
+    "~." $ORDER_SERVICE_URL;
+}
+
+map "$INVENTORY_SERVICE_URL" $inventory_backend {
+    default "http://inventory-service:8082";
+    "~." $INVENTORY_SERVICE_URL;
+}
+
+map "$RECOMMENDATION_SERVICE_URL" $recommendation_backend {
+    default "http://recommendation-service:8084";
+    "~." $RECOMMENDATION_SERVICE_URL;
+}
+
 server {
     listen 80;
     server_name localhost;
@@ -24,7 +45,7 @@ server {
     # Proxy API requests to backend services
     # Uses Railway service URLs if set via env vars, otherwise falls back to Docker service names
     location /api/auth {
-        set $backend ${AUTH_SERVICE_URL:-http://auth-service:8085};
+        set $backend $auth_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -35,7 +56,7 @@ server {
     }
 
     location /api/orders {
-        set $backend ${ORDER_SERVICE_URL:-http://order-service:8081};
+        set $backend $order_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -46,7 +67,7 @@ server {
     }
 
     location /api/cart {
-        set $backend ${ORDER_SERVICE_URL:-http://order-service:8081};
+        set $backend $order_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -57,7 +78,7 @@ server {
     }
 
     location /api/users {
-        set $backend ${ORDER_SERVICE_URL:-http://order-service:8081};
+        set $backend $order_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -68,7 +89,7 @@ server {
     }
 
     location /api/products {
-        set $backend ${INVENTORY_SERVICE_URL:-http://inventory-service:8082};
+        set $backend $inventory_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -79,7 +100,7 @@ server {
     }
 
     location /api/admin/products {
-        set $backend ${INVENTORY_SERVICE_URL:-http://inventory-service:8082};
+        set $backend $inventory_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -90,7 +111,7 @@ server {
     }
 
     location /api/search {
-        set $backend ${INVENTORY_SERVICE_URL:-http://inventory-service:8082};
+        set $backend $inventory_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -101,7 +122,7 @@ server {
     }
 
     location /api/admin/users {
-        set $backend ${AUTH_SERVICE_URL:-http://auth-service:8085};
+        set $backend $auth_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -112,7 +133,7 @@ server {
     }
 
     location /api/recommendations {
-        set $backend ${RECOMMENDATION_SERVICE_URL:-http://recommendation-service:8084};
+        set $backend $recommendation_backend;
         proxy_pass $backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
